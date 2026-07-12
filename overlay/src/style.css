@@ -1,0 +1,132 @@
+/* Transparenter Hintergrund: das Overlay legt sich in OBS über den Stream. */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: transparent;
+  font-family: ui-monospace, 'Cascadia Code', 'Fira Code', monospace;
+}
+
+#entity {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+#grid {
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: 12px;
+  height: 32%;
+}
+
+#repl {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  width: 400px;
+  max-height: 42%;
+  overflow: hidden;
+  border-radius: 10px;
+  background: rgba(8, 10, 16, 0.55);
+  backdrop-filter: blur(4px);
+  font-size: 12px;
+}
+
+#repl .cm-editor {
+  background: transparent !important;
+  font-size: 12px;
+}
+
+#ticker {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 340px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: right;
+  pointer-events: none;
+}
+
+.ticker-line {
+  color: rgba(255, 255, 255, 0.85);
+  background: rgba(8, 10, 16, 0.5);
+  border-radius: 6px;
+  padding: 4px 8px;
+  font-size: 13px;
+  align-self: flex-end;
+  animation: ticker-in 0.25s ease-out;
+}
+
+@keyframes ticker-in {
+  from {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+#credit {
+  position: absolute;
+  bottom: calc(32% + 22px);
+  left: 50%;
+  transform: translateX(-50%);
+  color: rgba(255, 255, 255, 0.8);
+  background: rgba(8, 10, 16, 0.5);
+  border-radius: 6px;
+  padding: 4px 12px;
+  font-size: 14px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+#credit:empty {
+  display: none;
+}
+
+#arm {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: rgba(0, 0, 0, 0.75);
+  z-index: 10;
+}
+
+#arm button {
+  font: inherit;
+  font-size: 20px;
+  letter-spacing: 0.08em;
+  color: #e8fbff;
+  background: transparent;
+  border: 1px solid #7de8ff;
+  border-radius: 8px;
+  padding: 14px 28px;
+  cursor: pointer;
+}
+
+#arm button:hover {
+  background: rgba(125, 232, 255, 0.15);
+}
+
+#arm p {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 13px;
+}
