@@ -1,3 +1,4 @@
+import { fileURLToPath } from 'node:url';
 import { WebSocketServer, WebSocket } from 'ws';
 import { WS_PORT_DEFAULT, type LiveEvent, type ServerMessage } from '@nixgame/shared';
 import { GridStore } from './store.js';
@@ -5,7 +6,7 @@ import { startMockSource } from './mock.js';
 import { startTikTokSource } from './tiktok.js';
 
 const port = Number(process.env.WS_PORT ?? WS_PORT_DEFAULT);
-const store = new GridStore(new URL('../data/state.json', import.meta.url).pathname);
+const store = new GridStore(fileURLToPath(new URL('../data/state.json', import.meta.url)));
 
 const wss = new WebSocketServer({ port });
 console.log(`[server] WebSocket auf ws://localhost:${port}`);

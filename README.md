@@ -42,7 +42,7 @@ Der Server verbindet sich über [tiktok-live-connector](https://github.com/zerod
 1. Browser-Source hinzufügen: `http://localhost:5173`, 1920×1080.
 2. **OBS ≥ 30:** In den Source-Eigenschaften *Page permissions* auf „Allow access to camera/microphone" stellen, sonst bekommt die Entität kein Kamerabild (Fallback-Geist erscheint).
 3. „Control audio via OBS" aktivieren, damit der Strudel-Sound in den Stream gemischt wird.
-4. Einmal mit „Interact" auf den ARM-Button klicken.
+4. Die Entität weckt sich in OBS automatisch (erkannt über `window.obsstudio`). In anderen Umgebungen ohne Klick-Geste hilft `?autostart=1` an der URL — vorausgesetzt, der Browser erlaubt Autoplay.
 
 ## Chat-Kommandos
 

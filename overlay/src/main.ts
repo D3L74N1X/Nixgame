@@ -83,13 +83,20 @@ connectWS(wsUrl, onMessage);
 
 // --- ARM: Autoplay-Policy verlangt eine User-Geste für Audio & Kamera
 const armOverlay = document.getElementById('arm')!;
-document.getElementById('arm-btn')!.addEventListener('click', () => {
+function arm(): void {
+  if (armed) return;
   armed = true;
   armOverlay.remove();
   clock.restart();
   strudel.arm();
   void entity.start();
-});
+}
+document.getElementById('arm-btn')!.addEventListener('click', arm);
+
+// In OBS (Browser-Source, CEF ohne Autoplay-Sperre) gibt es keine Klick-Geste —
+// dort automatisch wecken. `?autostart=1` erzwingt das auch anderswo.
+const inObs = 'obsstudio' in window;
+if (inObs || params.get('autostart') === '1') arm();
 
 // --- Render-Loop
 let lastT = performance.now();
