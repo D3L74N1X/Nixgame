@@ -110,7 +110,8 @@ export class Entity {
   pushFrame(jpeg: Blob): void {
     if (this.decoding) return; // Rückstau: Frame verwerfen, den nächsten nehmen
     this.decoding = true;
-    createImageBitmap(jpeg)
+    // UNPACK_FLIP_Y_WEBGL greift bei ImageBitmap nicht — Flip hier beim Dekodieren.
+    createImageBitmap(jpeg, { imageOrientation: 'flipY' })
       .then((bmp) => {
         this.frame?.close();
         this.frame = bmp;
