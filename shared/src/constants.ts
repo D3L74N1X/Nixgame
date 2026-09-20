@@ -9,42 +9,7 @@ export const FIRST_MELODIC_ROW = 5;
 /** Sounds, die in der fx-Zeile erlaubt sind — alle in der TR-909-Bank vorhanden. */
 export const FX_SOUNDS = ['cp', 'rim', 'lt', 'mt', 'ht', 'cr', 'rd'] as const;
 
-/** Drum-Bank aus den tidal-drum-machines (im Strudel-Prebake enthalten). */
-export const DRUM_BANK = 'RolandTR909';
-
-/**
- * Timbres, die als persistente User-Stimme vergeben werden (GM-Soundfonts,
- * laden bei erster Nutzung nach). `release` in Sekunden — Pads dürfen
- * nachklingen, Perkussives bleibt knackig.
- */
-export const VOICES = [
-  { s: 'gm_epiano1', release: 0.4 },
-  { s: 'gm_kalimba', release: 0.5 },
-  { s: 'gm_marimba', release: 0.3 },
-  { s: 'gm_vibraphone', release: 0.8 },
-  { s: 'gm_music_box', release: 0.6 },
-  { s: 'gm_celesta', release: 0.5 },
-  { s: 'gm_koto', release: 0.4 },
-  { s: 'gm_electric_guitar_muted', release: 0.15 },
-  { s: 'gm_synth_bass_2', release: 0.2 },
-  { s: 'gm_pad_warm', release: 1.2 },
-  { s: 'gm_lead_2_sawtooth', release: 0.25 },
-  { s: 'gm_steel_drums', release: 0.5 },
-] as const;
-
-/**
- * Harmonische Reise: alle 4 Takte wandert die Skala, Zuschauer-Noten werden
- * darauf quantisiert — so klingt auch Zufall musikalisch, und der Loop
- * verändert sich harmonisch von selbst. `drone` ist der Grundton-Teppich.
- */
-export const SCALE_JOURNEY = [
-  { scale: 'C:minor', drone: '[c2,g2]' },
-  { scale: 'C:dorian', drone: '[c2,g2]' },
-  { scale: 'Ab:lydian', drone: '[ab1,eb2]' },
-  { scale: 'G:minor', drone: '[g1,d2]' },
-  { scale: 'Bb:major', drone: '[bb1,f2]' },
-  { scale: 'C:minor:pentatonic', drone: '[c2,g2]' },
-] as const;
+/** Drum-Bank, Stimmen und Skalenreise sind Stil-Sache → styles.ts */
 export const SCALE_BARS = 4;
 
 export const NOTE_REGEX = /^[a-g][#b]?[2-5]$/;

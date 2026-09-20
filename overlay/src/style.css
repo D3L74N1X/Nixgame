@@ -167,6 +167,70 @@ body {
   }
 }
 
+/* Streamer-Toolbar: erscheint nur bei Mausbewegung (OBS „Interagieren“). */
+#tools {
+  position: absolute;
+  left: var(--pad);
+  bottom: calc(var(--grid-h) + var(--pad) + 8px);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: rgba(8, 10, 16, 0.8);
+  border: 1px solid rgba(125, 232, 255, 0.35);
+  color: rgba(255, 255, 255, 0.85);
+  font-size: var(--fs-ui);
+  z-index: 5;
+  transition: opacity 0.3s;
+}
+
+#tools[hidden] {
+  display: none;
+}
+
+#tools button {
+  font: inherit;
+  color: #e8fbff;
+  background: rgba(125, 232, 255, 0.1);
+  border: 1px solid rgba(125, 232, 255, 0.4);
+  border-radius: 6px;
+  padding: 3px 10px;
+  cursor: pointer;
+}
+
+#tools button:hover {
+  background: rgba(125, 232, 255, 0.25);
+}
+
+#tools button.active {
+  background: #7de8ff;
+  color: #06121a;
+}
+
+#tools button.danger {
+  border-color: rgba(255, 120, 120, 0.5);
+  color: #ffd0d0;
+}
+
+.tools-label {
+  opacity: 0.6;
+  font-size: 0.85em;
+  letter-spacing: 0.08em;
+}
+
+.tools-sep {
+  width: 1px;
+  height: 18px;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.tools-help {
+  opacity: 0.5;
+  font-size: 0.8em;
+  margin-left: 6px;
+}
+
 #arm {
   position: absolute;
   inset: 0;
@@ -240,6 +304,16 @@ body {
     max-width: calc(100% - 2 * var(--pad));
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+
+  #tools {
+    flex-wrap: wrap;
+    right: var(--pad);
+  }
+
+  .tools-help {
+    flex-basis: 100%;
+    margin-left: 0;
   }
 
   #arm button {

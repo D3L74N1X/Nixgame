@@ -14,11 +14,11 @@ TikTok LIVE ──(tiktok-live-connector)──▶ server ──(WebSocket)─�
 Webcam ──(ffmpeg/dshow, MJPEG)───────────▶┘                            ▲ JPEG-Frames (binär, WS)
 ```
 
-- **`shared/`** — Typen, Kommando-DSL, User-Stimmen, Grid→Strudel-Codegen
+- **`shared/`** — Typen, Kommando-DSL, User-Stimmen, Stil-Presets, Grid→Strudel-Codegen
 - **`server/`** — Node: TikTok-Events (oder Mock), Grid-Zustand, WS-Broadcast, Persistenz, Kamera-Frames (ffmpeg → MJPEG)
 - **`overlay/`** — Vite-App: transparente Overlay-Seite für OBS
 
-**Sicherheit:** Zuschauertext erreicht nie das REPL. Chat wird gegen eine Whitelist-DSL geparst; Strudel-Code entsteht ausschließlich aus validierten Tokens des Grids.
+**Sicherheit:** Zuschauertext erreicht nie das REPL. Chat wird gegen eine Whitelist-DSL geparst; Strudel-Code entsteht ausschließlich aus validierten Tokens des Grids und den Stil-Presets im Code.
 
 ## Quickstart (Entwicklung, ohne TikTok)
 
@@ -85,12 +85,36 @@ Bauen ist kostenlos. Gifts kaufen **Macht über das Territorium** — kumulativ,
 
 Ein neues Solo löst das laufende ab. Likes geben der Entität weiterhin nur Energie.
 
-## Entität steuern (Streamer)
+## Streamer-Eingriffe (OBS „Interagieren")
 
-| Taste | Wirkung |
+Der Streamer ist Moderator: Territorium-Regel und BPM-Cooldown gelten für ihn nicht. Alles geht per Maus im OBS-Interact-Fenster (die Toolbar erscheint bei Mausbewegung und verschwindet nach 4 s):
+
+| Eingabe | Wirkung |
 |---|---|
-| `1` / `2` / `3` | Punktwolke / ASCII / Slit-Scan (deaktiviert Auto-Zyklus) |
-| `a` | Auto-Zyklus an/aus (Moduswechsel alle 40 s) |
+| Linksklick auf leere Zelle | setzt den Zeilen-Sound bzw. die zuletzt benutzte Note |
+| Linksklick auf belegte Zelle | nächster fx-Sound / nächster Halbton |
+| Mausrad auf Zelle | fx-Sound bzw. Note hoch/runter |
+| Rechtsklick | Zelle löschen (auch fremde) |
+| Toolbar **Stil** | Preset wechseln (Tempo springt auf die Stil-Voreinstellung) |
+| Toolbar **BPM −/+** | Tempo in 5er-Schritten |
+| Toolbar **Territorium räumen** | zweimal klicken → Grid leer |
+| Taste `1` / `2` / `3` | Entität: Punktwolke / ASCII / Slit-Scan (deaktiviert Auto-Zyklus) |
+| Taste `a` | Auto-Zyklus an/aus (Moduswechsel alle 40 s) |
+
+Die Kommandos laufen als Nachrichten Overlay → Server über denselben WebSocket; der Server lauscht deshalb nur auf `127.0.0.1` (`WS_HOST` überschreibt das).
+
+## Stil-Presets
+
+`shared/src/styles.ts` — ein Stil bündelt Drum-Bank, Stimmen-Set, Skalenreise, Drone und Effekt-Charakter. Zuschauer-Zellen bleiben beim Wechsel erhalten, klingen aber sofort anders.
+
+| Stil | BPM | Drums | Charakter |
+|---|---|---|---|
+| **Deep** | 120 | TR-909 | GM-Plucks, Moll-Reise, Hall + Delay, leichter Swing |
+| **Lo-Fi** | 84 | Akai MPC60 | E-Piano/Vibraphon/Nylon, Pentatonik/Dorisch, dumpfer Filter, `coarse`, starker Swing |
+| **Rave** | 138 | E-mu SP-12 | Sawtooth/Square/Supersaw mit Filter-Envelope + Resonanz, Phrygisch, trocken, `shape` auf den Drums |
+| **Dream** | 92 | Oberheim DMX | Pads/Chor/Harfe mit langem Release, Lydisch/Dur, grosser Raum, weiche Drums |
+
+Die Drum-Bank muss alle Sounds `bd sd hh oh cp rim lt mt ht cr rd` enthalten — vollständig sind u. a. RolandTR909, LinnDrum, AkaiMPC60, EmuSP12, OberheimDMX, RolandTR505/626, RolandR8 (TR-808 fehlt `rd`).
 
 Die Slit-Scan-Scanlinie läuft synchron zum Playhead des Grids.
 

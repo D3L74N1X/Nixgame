@@ -1,3 +1,5 @@
+import type { StyleId } from './styles.js';
+
 /** Eine belegte Zelle im Grid. `token` ist je nach Zeile ein Sample-Name oder eine Note (z. B. "c3"). */
 export interface Cell {
   user: string;
@@ -19,6 +21,8 @@ export interface GridState {
   /** [row][col] */
   cells: (Cell | null)[][];
   solo?: Solo | null;
+  /** Stil-Preset (Streamer-Wahl); fehlt bei alten Zuständen → DEFAULT_STYLE. */
+  style?: StyleId;
 }
 
 /** Persistente "Stimme" eines Users, deterministisch aus dem Handle abgeleitet. */
@@ -52,3 +56,14 @@ export type ServerMessage =
   | { type: 'like'; count: number }
   | { type: 'gift'; user: string; giftName: string; value: number }
   | { type: 'solo'; solo: Solo | null };
+
+/**
+ * Nachrichten Overlay → Server: der Streamer greift per OBS „Interagieren“
+ * ein. Privilegiert (kein Territorium, kein Cooldown) — der WS lauscht nur
+ * auf localhost.
+ */
+export type ClientMessage =
+  | { type: 'cmd'; text: string }
+  | { type: 'style'; style: StyleId }
+  | { type: 'bpm'; bpm: number }
+  | { type: 'clearAll' };

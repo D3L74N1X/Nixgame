@@ -1,4 +1,4 @@
-import { VOICES } from './constants.js';
+import { DEFAULT_STYLE, STYLES, type StyleId } from './styles.js';
 import type { UserVoice } from './types.js';
 
 /** FNV-1a — stabil über Sessions, damit ein Handle immer dieselbe Stimme behält. */
@@ -11,9 +11,14 @@ export function hashHandle(handle: string): number {
   return h >>> 0;
 }
 
-export function voiceFor(handle: string): UserVoice {
+/**
+ * Persistente Stimme eines Handles. Die Farbe ist stil-unabhängig (Identität),
+ * das Timbre kommt aus dem Stimmen-Set des aktiven Stils.
+ */
+export function voiceFor(handle: string, style: StyleId = DEFAULT_STYLE): UserVoice {
   const h = hashHandle(handle.toLowerCase());
-  const v = VOICES[h % VOICES.length];
+  const voices = STYLES[style].voices;
+  const v = voices[h % voices.length];
   return {
     synth: v.s,
     release: v.release,

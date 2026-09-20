@@ -15,9 +15,21 @@ const cellFont = (cw: number, ch: number) =>
 /** Canvas-2D-Renderer für das Sequencer-Territorium samt Playhead. */
 export class GridRenderer {
   private ctx: CanvasRenderingContext2D;
+  /** Layout des letzten Frames (CSS-px) für hitTest(). */
+  private layout = { gx: LABEL_W, cw: 0, ch: 0 };
 
   constructor(private canvas: HTMLCanvasElement) {
     this.ctx = canvas.getContext('2d')!;
+  }
+
+  /** Zelle unter einem Mauspunkt (relativ zum Canvas, CSS-px) oder null. */
+  hitTest(x: number, y: number): { row: number; col: number } | null {
+    const { gx, cw, ch } = this.layout;
+    if (!cw || !ch) return null;
+    const col = Math.floor((x - gx) / cw);
+    const row = Math.floor((y - 5) / ch);
+    if (col < 0 || col >= GRID_COLS || row < 0 || row >= GRID_ROWS) return null;
+    return { row, col };
   }
 
   private fit(): { w: number; h: number } {
@@ -43,6 +55,7 @@ export class GridRenderer {
     const gh = h - 10;
     const cw = gw / GRID_COLS;
     const ch = gh / GRID_ROWS;
+    this.layout = { gx, cw, ch };
     const step = Math.floor(stepFloat);
     const now = Date.now();
     const soloist = state.solo?.user ?? null;

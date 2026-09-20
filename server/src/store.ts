@@ -3,6 +3,9 @@ import { dirname } from 'node:path';
 import {
   BPM_COOLDOWN_MS,
   DECAY_AFTER_MS,
+  DEFAULT_STYLE,
+  STYLES,
+  type StyleId,
   GIFT_SEAL_MIN,
   GIFT_SOLO_MIN,
   GIFT_STEAL_MIN,
@@ -30,7 +33,7 @@ function emptyGrid(): (Cell | null)[][] {
 }
 
 export class GridStore {
-  state: GridState = { bpm: DEFAULT_BPM, cells: emptyGrid() };
+  state: GridState = { bpm: DEFAULT_BPM, cells: emptyGrid(), style: DEFAULT_STYLE };
   private lastBpmChange = 0;
   private saveTimer: ReturnType<typeof setTimeout> | null = null;
   /** Diebstahl-Guthaben pro User (flüchtig, verfällt nach STEAL_TTL_MS). */
@@ -62,7 +65,8 @@ export class GridStore {
           }),
         );
         const solo = raw.solo && raw.solo.until > now ? raw.solo : null;
-        this.state = { bpm: raw.bpm ?? DEFAULT_BPM, cells: raw.cells, solo };
+        const style: StyleId = raw.style && raw.style in STYLES ? raw.style : DEFAULT_STYLE;
+        this.state = { bpm: raw.bpm ?? DEFAULT_BPM, cells: raw.cells, solo, style };
         console.log(`[store] Zustand geladen aus ${path}${dropped ? ` (${dropped} ungültige Zellen verworfen)` : ''}`);
       }
     } catch {
@@ -83,19 +87,22 @@ export class GridStore {
     }, 1000);
   }
 
-  /** Wendet eine Chat-Zeile an und liefert die Broadcast-Nachrichten. */
-  handleChat(user: string, text: string): ServerMessage[] {
+  /**
+   * Wendet eine Chat-Zeile an und liefert die Broadcast-Nachrichten.
+   * `privileged` = Streamer: kein Territorium, kein Cooldown.
+   */
+  handleChat(user: string, text: string, privileged = false): ServerMessage[] {
     const cmd = parseCommand(text);
     if (!cmd) return [];
-    return this.apply(user, cmd);
+    return this.apply(user, cmd, privileged);
   }
 
-  apply(user: string, cmd: Command): ServerMessage[] {
+  apply(user: string, cmd: Command, privileged = false): ServerMessage[] {
     switch (cmd.type) {
       case 'drum':
-        return this.setCell(user, rowForSound(cmd.sound), cmd.col, cmd.sound);
+        return this.setCell(user, rowForSound(cmd.sound), cmd.col, cmd.sound, privileged);
       case 'cell':
-        return this.setCell(user, cmd.row, cmd.col, cmd.token);
+        return this.setCell(user, cmd.row, cmd.col, cmd.token, privileged);
       case 'note': {
         // Erste freie melodische Zeile; ersatzweise eine eigene Zelle ersetzen.
         let target = -1;
@@ -118,12 +125,12 @@ export class GridStore {
             { type: 'ticker', text: `Spalte ${cmd.col + 1} ist voll`, user },
           ];
         }
-        return this.setCell(user, target, cmd.col, cmd.note);
+        return this.setCell(user, target, cmd.col, cmd.note, privileged);
       }
       case 'clear': {
         const cell = this.state.cells[cmd.row][cmd.col];
         if (!cell) return [];
-        if (cell.user !== user) {
+        if (cell.user !== user && !privileged) {
           return [
             { type: 'ticker', text: `Zelle gehört @${cell.user}`, user },
           ];
@@ -134,7 +141,7 @@ export class GridStore {
       }
       case 'bpm': {
         const now = Date.now();
-        if (now - this.lastBpmChange < BPM_COOLDOWN_MS) {
+        if (!privileged && now - this.lastBpmChange < BPM_COOLDOWN_MS) {
           return [{ type: 'ticker', text: 'BPM-Cooldown aktiv', user }];
         }
         this.lastBpmChange = now;
@@ -150,10 +157,11 @@ export class GridStore {
     row: number,
     col: number,
     token: string,
+    privileged = false,
   ): ServerMessage[] {
     const existing = this.state.cells[row][col];
     const msgs: ServerMessage[] = [];
-    if (existing && existing.user !== user) {
+    if (existing && existing.user !== user && !privileged) {
       if (!this.consumeSteal(user)) {
         return [{ type: 'ticker', text: `Zelle gehört @${existing.user}`, user }];
       }
@@ -227,6 +235,28 @@ export class GridStore {
     }
 
     return msgs;
+  }
+
+  /** Stil-Preset wechseln (Streamer). Tempo springt auf die Stil-Voreinstellung. */
+  setStyle(style: StyleId, user: string): ServerMessage[] {
+    if (this.state.style === style) return [];
+    this.state.style = style;
+    this.state.bpm = STYLES[style].bpm;
+    this.scheduleSave();
+    return [
+      { type: 'state', state: this.state },
+      { type: 'ticker', text: `wechselt den Stil: ${STYLES[style].label} ✦`, user },
+    ];
+  }
+
+  /** Alles räumen (Streamer). Solo und Tempo bleiben. */
+  clearAll(user: string): ServerMessage[] {
+    this.state.cells = emptyGrid();
+    this.scheduleSave();
+    return [
+      { type: 'state', state: this.state },
+      { type: 'ticker', text: 'räumt das Territorium', user },
+    ];
   }
 
   /** Solo beenden, falls abgelaufen. Liefert die Broadcast-Nachricht oder nichts. */
