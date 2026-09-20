@@ -7,6 +7,10 @@ import {
 } from '@nixgame/shared';
 
 const LABEL_W = 44;
+/** Zeilen-Label und Zell-Text skalieren mit der Zellhöhe (Hochformat: grössere Zellen). */
+const labelFont = (ch: number) => `${Math.round(Math.min(18, Math.max(11, ch * 0.34)))}px ui-monospace, monospace`;
+const cellFont = (cw: number, ch: number) =>
+  `${Math.round(Math.max(10, Math.min(cw * 0.4, ch * 0.42)))}px ui-monospace, monospace`;
 
 /** Canvas-2D-Renderer für das Sequencer-Territorium samt Playhead. */
 export class GridRenderer {
@@ -48,7 +52,7 @@ export class GridRenderer {
     ctx.fill();
 
     // Zeilen-Label
-    ctx.font = '12px ui-monospace, monospace';
+    ctx.font = labelFont(ch);
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     for (let row = 0; row < GRID_ROWS; row++) {
@@ -81,7 +85,7 @@ export class GridRenderer {
             ctx.shadowBlur = 0;
           }
           ctx.fillStyle = 'rgba(0,0,0,0.75)';
-          ctx.font = `${Math.min(11, ch * 0.4)}px ui-monospace, monospace`;
+          ctx.font = cellFont(cw, ch);
           ctx.fillText(cell.token, x + cw / 2, y + ch / 2);
         } else {
           ctx.strokeStyle = 'rgba(255,255,255,0.08)';

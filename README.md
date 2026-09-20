@@ -40,7 +40,7 @@ Der Server verbindet sich über [tiktok-live-connector](https://github.com/zerod
 
 ### OBS-Einbindung
 
-1. Browser-Source hinzufügen: `http://localhost:5173`, 1920×1080.
+1. Browser-Source hinzufügen: `http://localhost:5173`. Für TikTok **720×1280** (Hochformat) — das Overlay erkennt die Ausrichtung per Media-Query und stapelt REPL, Hinweis, Ticker und Grid mit handytauglicher Schrift; 1920×1080 funktioniert weiterhin. Vorschau des Hochformats im Desktop-Browser: `http://localhost:5173/dev-portrait.html`.
 2. **Kamera:** Die Browser-Source in OBS bekommt keinen zuverlässigen Kamerazugriff (auch nicht mit `--enable-media-stream`). Deshalb greift der **Server** die Webcam per [ffmpeg](https://ffmpeg.org) (DirectShow) ab und schickt JPEG-Frames über den WebSocket ans Overlay. `ffmpeg` muss im PATH liegen (z. B. `winget install Gyan.FFmpeg`). Ohne ffmpeg/Kamera versucht das Overlay getUserMedia, sonst erscheint der Fallback-Geist.
    - `CAMERA="<Gerätename>"` wählt ein Gerät explizit (Liste: `ffmpeg -list_devices true -f dshow -i dummy`); ohne Angabe wird die erste echte (nicht-virtuelle) Kamera genommen.
    - `CAMERA=off` deaktiviert die Server-Kamera; `CAMERA_FPS` (15) und `CAMERA_WIDTH` (640) tunen die Last.
