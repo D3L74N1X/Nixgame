@@ -79,7 +79,7 @@ function onMessage(msg: ServerMessage): void {
 const params = new URLSearchParams(location.search);
 const wsUrl =
   params.get('ws') ?? `ws://${location.hostname || 'localhost'}:${WS_PORT_DEFAULT}`;
-connectWS(wsUrl, onMessage);
+connectWS(wsUrl, onMessage, (jpeg) => entity.pushFrame(jpeg));
 
 // --- ARM: Autoplay-Policy verlangt eine User-Geste für Audio & Kamera
 const armOverlay = document.getElementById('arm')!;

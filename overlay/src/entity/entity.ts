@@ -33,6 +33,10 @@ function hueToRgb(hue: number): [number, number, number] {
 export class Entity {
   private gl: WebGL2RenderingContext;
   private video: HTMLVideoElement | null = null;
+  private frame: ImageBitmap | null = null;
+  private frameAt = 0;
+  private frameDirty = false;
+  private decoding = false;
   private fallback = document.createElement('canvas');
   private fallbackCtx: CanvasRenderingContext2D;
   private videoTex: WebGLTexture;
@@ -99,8 +103,34 @@ export class Entity {
     });
   }
 
+  /**
+   * Kamera-Frame vom Server (JPEG). Hat Vorrang vor getUserMedia — in OBS
+   * bekommt die Browser-Source keine Kamera, der Server aber schon.
+   */
+  pushFrame(jpeg: Blob): void {
+    if (this.decoding) return; // Rückstau: Frame verwerfen, den nächsten nehmen
+    this.decoding = true;
+    createImageBitmap(jpeg)
+      .then((bmp) => {
+        this.frame?.close();
+        this.frame = bmp;
+        this.frameAt = performance.now();
+        this.frameDirty = true;
+      })
+      .catch(() => {})
+      .finally(() => (this.decoding = false));
+  }
+
+  private get serverFrameLive(): boolean {
+    return this.frame !== null && performance.now() - this.frameAt < 2000;
+  }
+
   /** Kamera anfordern; ohne Kamera haust ein prozeduraler Geist im Artefakt. */
   async start(): Promise<void> {
+    if (this.serverFrameLive) {
+      console.log('[entity] Kamera kommt vom Server');
+      return;
+    }
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { width: 640, height: 360 },
@@ -195,7 +225,14 @@ export class Entity {
     const gl = this.gl;
     gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
     gl.bindTexture(gl.TEXTURE_2D, this.videoTex);
-    if (this.video && this.video.readyState >= 2) {
+    if (this.serverFrameLive) {
+      const f = this.frame!;
+      this.sourceSize = { w: f.width, h: f.height };
+      if (this.frameDirty) {
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, f);
+        this.frameDirty = false;
+      }
+    } else if (this.video && this.video.readyState >= 2) {
       this.sourceSize = { w: this.video.videoWidth, h: this.video.videoHeight };
       gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, this.video);
     } else {

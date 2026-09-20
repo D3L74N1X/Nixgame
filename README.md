@@ -10,11 +10,12 @@ Der Bildschirm ist ein geteiltes Territorium — ein 16×8-Step-Sequencer, desse
 TikTok LIVE ──(tiktok-live-connector)──▶ server ──(WebSocket)──▶ overlay (OBS Browser-Source)
                                           │                        ├─ Grid-Sequencer (Canvas 2D)
                                           │                        ├─ Strudel-REPL (<strudel-editor>)
-                                          └─ Mock-Generator        └─ Entität (WebGL2-Shader)
+                                          ├─ Mock-Generator        └─ Entität (WebGL2-Shader)
+Webcam ──(ffmpeg/dshow, MJPEG)───────────▶┘                            ▲ JPEG-Frames (binär, WS)
 ```
 
 - **`shared/`** — Typen, Kommando-DSL, User-Stimmen, Grid→Strudel-Codegen
-- **`server/`** — Node: TikTok-Events (oder Mock), Grid-Zustand, WS-Broadcast, Persistenz
+- **`server/`** — Node: TikTok-Events (oder Mock), Grid-Zustand, WS-Broadcast, Persistenz, Kamera-Frames (ffmpeg → MJPEG)
 - **`overlay/`** — Vite-App: transparente Overlay-Seite für OBS
 
 **Sicherheit:** Zuschauertext erreicht nie das REPL. Chat wird gegen eine Whitelist-DSL geparst; Strudel-Code entsteht ausschließlich aus validierten Tokens des Grids.
@@ -40,7 +41,10 @@ Der Server verbindet sich über [tiktok-live-connector](https://github.com/zerod
 ### OBS-Einbindung
 
 1. Browser-Source hinzufügen: `http://localhost:5173`, 1920×1080.
-2. **OBS ≥ 30:** In den Source-Eigenschaften *Page permissions* auf „Allow access to camera/microphone" stellen, sonst bekommt die Entität kein Kamerabild (Fallback-Geist erscheint).
+2. **Kamera:** Die Browser-Source in OBS bekommt keinen zuverlässigen Kamerazugriff (auch nicht mit `--enable-media-stream`). Deshalb greift der **Server** die Webcam per [ffmpeg](https://ffmpeg.org) (DirectShow) ab und schickt JPEG-Frames über den WebSocket ans Overlay. `ffmpeg` muss im PATH liegen (z. B. `winget install Gyan.FFmpeg`). Ohne ffmpeg/Kamera versucht das Overlay getUserMedia, sonst erscheint der Fallback-Geist.
+   - `CAMERA="<Gerätename>"` wählt ein Gerät explizit (Liste: `ffmpeg -list_devices true -f dshow -i dummy`); ohne Angabe wird die erste echte (nicht-virtuelle) Kamera genommen.
+   - `CAMERA=off` deaktiviert die Server-Kamera; `CAMERA_FPS` (15) und `CAMERA_WIDTH` (640) tunen die Last.
+   - Die Kamera darf gleichzeitig **nicht** als OBS-Videoquelle laufen (DirectShow-Exklusivzugriff).
 3. „Control audio via OBS" aktivieren, damit der Strudel-Sound in den Stream gemischt wird.
 4. Die Entität weckt sich in OBS automatisch (erkannt über `window.obsstudio`). In anderen Umgebungen ohne Klick-Geste hilft `?autostart=1` an der URL — vorausgesetzt, der Browser erlaubt Autoplay.
 
