@@ -2,10 +2,12 @@ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 import {
   BPM_COOLDOWN_MS,
+  DECAY_AFTER_MS,
   DEFAULT_BPM,
   FIRST_MELODIC_ROW,
   GRID_COLS,
   GRID_ROWS,
+  isValidToken,
   parseCommand,
   rowForSound,
   type Cell,
@@ -37,8 +39,21 @@ export class GridStore {
         raw.cells.length === GRID_ROWS &&
         raw.cells.every((r) => Array.isArray(r) && r.length === GRID_COLS)
       ) {
+        // Tokens, die nach einer Whitelist-Änderung ungültig wurden, verwerfen.
+        let dropped = 0;
+        const now = Date.now();
+        raw.cells.forEach((row, r) =>
+          row.forEach((cell, c) => {
+            if (cell && !isValidToken(r, cell.token)) {
+              row[c] = null;
+              dropped++;
+            } else if (cell) {
+              cell.since ??= now;
+            }
+          }),
+        );
         this.state = { bpm: raw.bpm ?? DEFAULT_BPM, cells: raw.cells };
-        console.log(`[store] Zustand geladen aus ${path}`);
+        console.log(`[store] Zustand geladen aus ${path}${dropped ? ` (${dropped} ungültige Zellen verworfen)` : ''}`);
       }
     } catch {
       // kein persistierter Zustand — frisches Grid
@@ -130,9 +145,31 @@ export class GridStore {
     if (existing && existing.user !== user) {
       return [{ type: 'ticker', text: `Zelle gehört @${existing.user}`, user }];
     }
-    const cell: Cell = { user, token };
+    const cell: Cell = { user, token, since: Date.now() };
     this.state.cells[row][col] = cell;
     this.scheduleSave();
     return [{ type: 'cell', row, col, cell }];
+  }
+
+  /**
+   * Verfall: eine zufällige Zelle, die länger als DECAY_AFTER_MS unberührt
+   * ist, bröckelt weg. Liefert die Broadcast-Nachrichten (leer, wenn nichts
+   * alt genug ist).
+   */
+  decay(now = Date.now()): ServerMessage[] {
+    const stale: { row: number; col: number; cell: Cell }[] = [];
+    this.state.cells.forEach((cells, row) =>
+      cells.forEach((cell, col) => {
+        if (cell && now - (cell.since ?? 0) > DECAY_AFTER_MS) stale.push({ row, col, cell });
+      }),
+    );
+    if (stale.length === 0) return [];
+    const { row, col, cell } = stale[Math.floor(Math.random() * stale.length)];
+    this.state.cells[row][col] = null;
+    this.scheduleSave();
+    return [
+      { type: 'cell', row, col, cell: null },
+      { type: 'ticker', text: `${cell.token} in Spalte ${col + 1} verfällt`, user: cell.user },
+    ];
   }
 }

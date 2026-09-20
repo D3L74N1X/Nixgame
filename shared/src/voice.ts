@@ -1,4 +1,4 @@
-import { VOICE_SYNTHS } from './constants.js';
+import { VOICES } from './constants.js';
 import type { UserVoice } from './types.js';
 
 /** FNV-1a — stabil über Sessions, damit ein Handle immer dieselbe Stimme behält. */
@@ -13,8 +13,10 @@ export function hashHandle(handle: string): number {
 
 export function voiceFor(handle: string): UserVoice {
   const h = hashHandle(handle.toLowerCase());
+  const v = VOICES[h % VOICES.length];
   return {
-    synth: VOICE_SYNTHS[h % VOICE_SYNTHS.length],
+    synth: v.s,
+    release: v.release,
     hue: (h >>> 8) % 360,
   };
 }

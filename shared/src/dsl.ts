@@ -58,13 +58,7 @@ export function parseCommand(text: string): Command | null {
       const row = parseInt1Based(parts[2], GRID_ROWS);
       const token = parts[3];
       if (col === null || row === null || !token) return null;
-      if (row < FX_ROW) {
-        if (token !== PERC_FIXED_SOUNDS[row]) return null;
-      } else if (row === FX_ROW) {
-        if (!isFxSound(token)) return null;
-      } else if (!NOTE_REGEX.test(token)) {
-        return null;
-      }
+      if (!isValidToken(row, token)) return null;
       return { type: 'cell', col, row, token };
     }
     case '!clear': {
@@ -82,6 +76,13 @@ export function parseCommand(text: string): Command | null {
     default:
       return null;
   }
+}
+
+/** Ist `token` in Zeile `row` erlaubt? (Gleiche Regeln wie `!cell`.) */
+export function isValidToken(row: number, token: string): boolean {
+  if (row < FX_ROW) return token === PERC_FIXED_SOUNDS[row];
+  if (row === FX_ROW) return isFxSound(token);
+  return NOTE_REGEX.test(token);
 }
 
 /** Zeile, in der ein Percussion-Sound landet. */

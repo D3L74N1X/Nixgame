@@ -40,7 +40,7 @@ export function startMockSource(emit: (ev: LiveEvent) => void): () => void {
 
   const chat = setInterval(() => {
     emit({ kind: 'chat', user: pick(USERS), text: randomChatLine() });
-  }, 1500 + Math.random() * 2000);
+  }, 4000 + Math.random() * 4000);
   timers.push(chat);
 
   timers.push(

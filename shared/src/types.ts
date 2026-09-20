@@ -2,6 +2,8 @@
 export interface Cell {
   user: string;
   token: string;
+  /** Zeitpunkt der (letzten) Beanspruchung, ms epoch — Basis für den Verfall. */
+  since?: number;
 }
 
 export interface GridState {
@@ -13,6 +15,8 @@ export interface GridState {
 /** Persistente "Stimme" eines Users, deterministisch aus dem Handle abgeleitet. */
 export interface UserVoice {
   synth: string;
+  /** Release in Sekunden (Pads klingen nach, Perkussives nicht). */
+  release: number;
   hue: number;
 }
 

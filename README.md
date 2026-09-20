@@ -52,13 +52,24 @@ Der Server verbindet sich über [tiktok-live-connector](https://github.com/zerod
 
 | Kommando | Wirkung |
 |---|---|
-| `!drum bd 5` | Percussion in Spalte 5 (`bd sd hh oh` = feste Zeilen; `cp rim lt mt ht click perc` → fx-Zeile) |
+| `!drum bd 5` | Percussion in Spalte 5 (`bd sd hh oh` = feste Zeilen; `cp rim lt mt ht cr rd` → fx-Zeile) |
 | `!note c3 5` | Note in Spalte 5, erste freie melodische Zeile (`c2`–`b5`, auch `#`/`b`) |
 | `!cell 5 7 e4` | Direkte Zellen-Adressierung: Spalte, Zeile, Token |
 | `!clear 5 7` | Eigene Zelle räumen |
 | `!bpm 140` | Tempo 60–200 (15 s Cooldown) |
 
-Regeln: Freie Zellen kann jeder beanspruchen, fremde Zellen sind tabu (Territorium!). Jeder Handle bekommt deterministisch eine persistente **Stimme** (Synth + Farbe) — Beiträge klingen und leuchten nach ihrem Autor, der Playhead kreditiert live („jetzt hörbar: @…").
+Regeln: Freie Zellen kann jeder beanspruchen, fremde Zellen sind tabu (Territorium!). Jeder Handle bekommt deterministisch eine persistente **Stimme** (GM-Timbre + Farbe) — Beiträge klingen und leuchten nach ihrem Autor, der Playhead kreditiert live („jetzt hörbar: @…").
+
+**Verfall:** Zellen, die 4 Minuten unberührt bleiben, bröckeln weg (höchstens eine alle 20 s). Wer seine Zelle erneut setzt, frischt sie auf. So bleibt das Grid luftig und das Pattern in Bewegung.
+
+## Klangkonzept
+
+Der Codegen (`shared/src/codegen.ts`) erzeugt keinen Chiptune-Loop, sondern:
+
+- **Drums** aus der TR-909-Bank mit Swing, Hi-Hat-Akzenten, Fill alle 8 Takte und Kick-Aussetzer alle 16.
+- **Harmonische Reise:** Alle 4 Takte wandert die Skala (`C:minor → C:dorian → Ab:lydian → G:minor → Bb:major → C:minor:pentatonic`), Zuschauer-Noten werden per `.scale()` darauf quantisiert — auch zufällige Eingaben klingen musikalisch, und derselbe Grid-Zustand klingt in jedem Durchlauf anders.
+- **Stimmen** sind GM-Soundfonts (E-Piano, Kalimba, Marimba, Vibraphon, Koto, Pad, …) mit Raum, tempo-synchronem Delay, langsam wanderndem Filter und gelegentlichen Oktavsprüngen.
+- **Drone:** Grundton + Quinte als leiser Pad-Teppich, folgt der Skalenreise — die Entität summt, auch wenn das Grid leer ist.
 
 ## Entität steuern (Streamer)
 
@@ -73,4 +84,3 @@ Die Slit-Scan-Scanlinie läuft synchron zum Playhead des Grids.
 
 - Gift-Eskalation: Zellen "stehlen", Effekt-Layer, REPL-Slot (60 s echtes Live-Coding für Top-Gifter, sandboxed)
 - Archiv/Sediment: alte Patterns kehren als Geister-Echos zurück
-- Verfall: unbespielte Zellen erodieren langsam

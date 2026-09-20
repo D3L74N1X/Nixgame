@@ -1,6 +1,11 @@
 import { fileURLToPath } from 'node:url';
 import { WebSocketServer, WebSocket } from 'ws';
-import { WS_PORT_DEFAULT, type LiveEvent, type ServerMessage } from '@nixgame/shared';
+import {
+  DECAY_INTERVAL_MS,
+  WS_PORT_DEFAULT,
+  type LiveEvent,
+  type ServerMessage,
+} from '@nixgame/shared';
 import { GridStore } from './store.js';
 import { startMockSource } from './mock.js';
 import { startTikTokSource } from './tiktok.js';
@@ -40,6 +45,11 @@ setInterval(() => {
     likeBuffer = 0;
   }
 }, 1000);
+
+// Verfall: unbespielte Zellen erodieren langsam.
+setInterval(() => {
+  for (const msg of store.decay()) broadcast(msg);
+}, DECAY_INTERVAL_MS);
 
 function onEvent(ev: LiveEvent) {
   switch (ev.kind) {
