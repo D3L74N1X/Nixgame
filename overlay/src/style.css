@@ -98,6 +98,44 @@ body {
   display: none;
 }
 
+#hint {
+  position: absolute;
+  top: calc(42% + 24px);
+  left: 12px;
+  width: 400px;
+  pointer-events: none;
+}
+
+.hint-line {
+  color: rgba(255, 255, 255, 0.85);
+  background: rgba(8, 10, 16, 0.55);
+  border-left: 3px solid #7de8ff;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 14px;
+  line-height: 1.4;
+  animation: hint-in 0.4s ease-out;
+}
+
+.hint-line code {
+  font: inherit;
+  color: #7de8ff;
+  background: rgba(125, 232, 255, 0.12);
+  border-radius: 4px;
+  padding: 0 5px;
+}
+
+@keyframes hint-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
 #arm {
   position: absolute;
   inset: 0;

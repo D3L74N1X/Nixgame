@@ -123,6 +123,7 @@ function frame(now: number): void {
     if (users.length > 0 && armed) pulse = Math.max(pulse, 0.8);
   }
 
+  hud.gridEmpty = !grid || grid.cells.every((row) => row.every((c) => c === null));
   gridRenderer.render(grid, stepFloat, pulse);
   entity.render(now / 1000, energy, pulse, hue, stepFloat / GRID_COLS);
   requestAnimationFrame(frame);

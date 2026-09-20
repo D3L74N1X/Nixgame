@@ -2,11 +2,53 @@ import { voiceFor } from '@nixgame/shared';
 
 const TICKER_MAX = 6;
 const TICKER_TTL_MS = 8000;
+const HINT_INTERVAL_MS = 12_000;
+
+/**
+ * Rotierende Hinweise für Zuschauer. `Backticks` werden als Kommando
+ * hervorgehoben. Die ersten STARTER_HINTS erklären den Einstieg und laufen
+ * exklusiv, solange das Grid leer ist.
+ */
+const HINTS = [
+  'Du bist der Creator. Schreib in den Chat: `!note e4 5` → deine Note in Spalte 5',
+  '`!drum bd 1` → Kick auf die Eins. Sounds: bd sd hh oh · cp rim lt mt ht cr rd',
+  'Spalten 1–16 laufen von links nach rechts. Freie Zellen gehören dem, der zuerst kommt.',
+  'Deine Zellen leuchten in deiner Farbe und klingen mit deiner Stimme.',
+  '`!bpm 128` → Tempo für alle (60–200)',
+  'Was 4 Minuten unberührt bleibt, verfällt. Setz es neu, um es zu halten.',
+  '`!clear 5 7` → eigene Zelle räumen · `!cell 5 7 e4` → gezielt setzen',
+  'Likes geben der Entität Energie. Gifts lassen sie pulsieren.',
+  'Noten: c2 bis b5, auch mit # und b. Was du tippst, wird in die Tonart gebogen.',
+];
+const STARTER_HINTS = 2;
 
 export class Hud {
   private ticker = document.getElementById('ticker')!;
   private credit = document.getElementById('credit')!;
+  private hint = document.getElementById('hint')!;
   private lastCredit = '';
+  private hintIndex = -1;
+  gridEmpty = true;
+
+  constructor() {
+    this.nextHint();
+    setInterval(() => this.nextHint(), HINT_INTERVAL_MS);
+  }
+
+  private nextHint(): void {
+    const pool = this.gridEmpty ? STARTER_HINTS : HINTS.length;
+    this.hintIndex = (this.hintIndex + 1) % pool;
+    const el = document.createElement('div');
+    el.className = 'hint-line';
+    // `Kommando` → <code>
+    HINTS[this.hintIndex].split('`').forEach((part, i) => {
+      if (!part) return;
+      const node = i % 2 ? document.createElement('code') : document.createTextNode(part);
+      if (i % 2) node.textContent = part;
+      el.appendChild(node);
+    });
+    this.hint.replaceChildren(el);
+  }
 
   addLine(text: string, user?: string): void {
     const el = document.createElement('div');

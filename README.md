@@ -60,6 +60,8 @@ Der Server verbindet sich über [tiktok-live-connector](https://github.com/zerod
 
 Regeln: Freie Zellen kann jeder beanspruchen, fremde Zellen sind tabu (Territorium!). Jeder Handle bekommt deterministisch eine persistente **Stimme** (GM-Timbre + Farbe) — Beiträge klingen und leuchten nach ihrem Autor, der Playhead kreditiert live („jetzt hörbar: @…").
 
+**Hinweise:** Unter dem REPL rotiert alle 12 s eine Erklärzeile für Zuschauer (Kommandos, Regeln, Verfall). Solange das Grid leer ist, bleiben nur die beiden Einstiegs-Hints. Texte in `overlay/src/hud.ts` (`HINTS`).
+
 **Verfall:** Zellen, die 4 Minuten unberührt bleiben, bröckeln weg (höchstens eine alle 20 s). Wer seine Zelle erneut setzt, frischt sie auf. So bleibt das Grid luftig und das Pattern in Bewegung.
 
 ## Klangkonzept
