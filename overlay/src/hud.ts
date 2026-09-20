@@ -19,6 +19,9 @@ const HINTS = [
   '`!clear 5 7` → eigene Zelle räumen · `!cell 5 7 e4` → gezielt setzen',
   'Likes geben der Entität Energie. Gifts lassen sie pulsieren.',
   'Noten: c2 bis b5, auch mit # und b. Was du tippst, wird in die Tonart gebogen.',
+  'Jedes Gift 🔒 versiegelt deine Zellen 10 min gegen den Verfall.',
+  'Gift ab 100 💎 🗡️ → du darfst fremde Zellen übernehmen: einfach draufsetzen.',
+  'Gift ab 1000 💎 ⚡ → 60 s SOLO: nur deine Zellen spielen, die Entität trägt deine Farbe.',
 ];
 const STARTER_HINTS = 2;
 
@@ -69,11 +72,19 @@ export class Hud {
   }
 
   /** "jetzt hörbar: …" — die Autorschafts-Anzeige unterm Playhead. */
-  setCredit(users: string[]): void {
-    const key = users.join(',');
+  setCredit(users: string[], soloist: string | null = null): void {
+    const key = `${soloist ?? ''}|${users.join(',')}`;
     if (key === this.lastCredit) return;
     this.lastCredit = key;
     this.credit.replaceChildren();
+    this.credit.classList.toggle('solo', soloist !== null);
+    if (soloist) {
+      const span = document.createElement('span');
+      span.textContent = `⚡ SOLO @${soloist}`;
+      span.style.color = `hsl(${voiceFor(soloist).hue} 90% 70%)`;
+      this.credit.appendChild(span);
+      return;
+    }
     if (users.length === 0) return;
     this.credit.appendChild(document.createTextNode('jetzt hörbar: '));
     users.forEach((u, i) => {

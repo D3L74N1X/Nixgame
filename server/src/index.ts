@@ -46,6 +46,17 @@ setInterval(() => {
   }
 }, 1000);
 
+// Solo-Ende punktgenau melden (ein neues Solo verschiebt den Timer).
+let soloTimer: ReturnType<typeof setTimeout> | null = null;
+function scheduleSoloEnd(until: number) {
+  if (soloTimer) clearTimeout(soloTimer);
+  soloTimer = setTimeout(() => {
+    soloTimer = null;
+    for (const msg of store.expireSolo()) broadcast(msg);
+  }, Math.max(0, until - Date.now()) + 50);
+}
+if (store.state.solo) scheduleSoloEnd(store.state.solo.until);
+
 // Verfall: unbespielte Zellen erodieren langsam.
 setInterval(() => {
   for (const msg of store.decay()) broadcast(msg);
@@ -62,6 +73,8 @@ function onEvent(ev: LiveEvent) {
       break;
     case 'gift':
       broadcast({ type: 'gift', user: ev.user, giftName: ev.giftName, value: ev.value });
+      for (const msg of store.applyGift(ev.user, ev.value)) broadcast(msg);
+      if (store.state.solo) scheduleSoloEnd(store.state.solo.until);
       break;
   }
 }

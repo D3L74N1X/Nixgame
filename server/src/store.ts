@@ -3,6 +3,13 @@ import { dirname } from 'node:path';
 import {
   BPM_COOLDOWN_MS,
   DECAY_AFTER_MS,
+  GIFT_SEAL_MIN,
+  GIFT_SOLO_MIN,
+  GIFT_STEAL_MIN,
+  SEAL_MS,
+  SOLO_MS,
+  STEAL_MAX_CREDITS,
+  STEAL_TTL_MS,
   DEFAULT_BPM,
   FIRST_MELODIC_ROW,
   GRID_COLS,
@@ -26,6 +33,8 @@ export class GridStore {
   state: GridState = { bpm: DEFAULT_BPM, cells: emptyGrid() };
   private lastBpmChange = 0;
   private saveTimer: ReturnType<typeof setTimeout> | null = null;
+  /** Diebstahl-Guthaben pro User (flüchtig, verfällt nach STEAL_TTL_MS). */
+  private steals = new Map<string, { credits: number; until: number }>();
 
   constructor(private persistPath?: string) {
     if (persistPath) this.load(persistPath);
@@ -52,7 +61,8 @@ export class GridStore {
             }
           }),
         );
-        this.state = { bpm: raw.bpm ?? DEFAULT_BPM, cells: raw.cells };
+        const solo = raw.solo && raw.solo.until > now ? raw.solo : null;
+        this.state = { bpm: raw.bpm ?? DEFAULT_BPM, cells: raw.cells, solo };
         console.log(`[store] Zustand geladen aus ${path}${dropped ? ` (${dropped} ungültige Zellen verworfen)` : ''}`);
       }
     } catch {
@@ -142,13 +152,89 @@ export class GridStore {
     token: string,
   ): ServerMessage[] {
     const existing = this.state.cells[row][col];
+    const msgs: ServerMessage[] = [];
     if (existing && existing.user !== user) {
-      return [{ type: 'ticker', text: `Zelle gehört @${existing.user}`, user }];
+      if (!this.consumeSteal(user)) {
+        return [{ type: 'ticker', text: `Zelle gehört @${existing.user}`, user }];
+      }
+      msgs.push({ type: 'ticker', text: `stiehlt ${existing.token} von @${existing.user} 🗡️`, user });
     }
     const cell: Cell = { user, token, since: Date.now() };
+    // Eigene Versiegelung bleibt beim Überschreiben erhalten.
+    if (existing?.user === user && existing.sealedUntil) cell.sealedUntil = existing.sealedUntil;
     this.state.cells[row][col] = cell;
     this.scheduleSave();
-    return [{ type: 'cell', row, col, cell }];
+    msgs.push({ type: 'cell', row, col, cell });
+    return msgs;
+  }
+
+  private consumeSteal(user: string): boolean {
+    const s = this.steals.get(user);
+    if (!s || s.until < Date.now() || s.credits <= 0) {
+      this.steals.delete(user);
+      return false;
+    }
+    s.credits--;
+    if (s.credits === 0) this.steals.delete(user);
+    return true;
+  }
+
+  /**
+   * Gift-Eskalation, kumulativ nach Diamantwert: versiegeln → Diebstahl-
+   * Guthaben → Solo. Liefert die Broadcast-Nachrichten.
+   */
+  applyGift(user: string, value: number): ServerMessage[] {
+    const now = Date.now();
+    const msgs: ServerMessage[] = [];
+
+    if (value >= GIFT_SEAL_MIN) {
+      let sealed = 0;
+      for (const row of this.state.cells) {
+        for (const cell of row) {
+          if (cell?.user === user) {
+            cell.sealedUntil = now + SEAL_MS;
+            sealed++;
+          }
+        }
+      }
+      if (sealed > 0) {
+        const plural = sealed > 1 ? 'n' : '';
+        msgs.push({ type: 'ticker', text: `versiegelt ${sealed} Zelle${plural} für ${SEAL_MS / 60_000} min 🔒`, user });
+        this.scheduleSave();
+      }
+    }
+
+    if (value >= GIFT_STEAL_MIN) {
+      const prev = this.steals.get(user);
+      const credits = Math.min(
+        STEAL_MAX_CREDITS,
+        (prev && prev.until > now ? prev.credits : 0) + Math.floor(value / GIFT_STEAL_MIN),
+      );
+      this.steals.set(user, { credits, until: now + STEAL_TTL_MS });
+      const plural = credits > 1 ? 'n' : '';
+      msgs.push({
+        type: 'ticker',
+        text: `darf ${credits} fremde Zelle${plural} stehlen — einfach draufsetzen 🗡️`,
+        user,
+      });
+    }
+
+    if (value >= GIFT_SOLO_MIN) {
+      this.state.solo = { user, until: now + SOLO_MS };
+      this.scheduleSave();
+      msgs.push({ type: 'solo', solo: this.state.solo });
+      msgs.push({ type: 'ticker', text: `SOLO — ${SOLO_MS / 1000} s gehört die Bühne dir ⚡`, user });
+    }
+
+    return msgs;
+  }
+
+  /** Solo beenden, falls abgelaufen. Liefert die Broadcast-Nachricht oder nichts. */
+  expireSolo(now = Date.now()): ServerMessage[] {
+    if (!this.state.solo || this.state.solo.until > now) return [];
+    this.state.solo = null;
+    this.scheduleSave();
+    return [{ type: 'solo', solo: null }];
   }
 
   /**
@@ -160,7 +246,9 @@ export class GridStore {
     const stale: { row: number; col: number; cell: Cell }[] = [];
     this.state.cells.forEach((cells, row) =>
       cells.forEach((cell, col) => {
-        if (cell && now - (cell.since ?? 0) > DECAY_AFTER_MS) stale.push({ row, col, cell });
+        if (!cell) return;
+        if (cell.sealedUntil && cell.sealedUntil > now) return; // versiegelt
+        if (now - (cell.since ?? 0) > DECAY_AFTER_MS) stale.push({ row, col, cell });
       }),
     );
     if (stale.length === 0) return [];

@@ -44,6 +44,8 @@ export class GridRenderer {
     const cw = gw / GRID_COLS;
     const ch = gh / GRID_ROWS;
     const step = Math.floor(stepFloat);
+    const now = Date.now();
+    const soloist = state.solo?.user ?? null;
 
     // Hintergrundfläche des Territoriums
     ctx.fillStyle = 'rgba(8, 10, 16, 0.55)';
@@ -74,17 +76,29 @@ export class GridRenderer {
         if (cell) {
           const { hue } = voiceFor(cell.user);
           const hot = col === step;
-          ctx.fillStyle = `hsla(${hue}, 85%, ${hot ? 68 : 52}%, ${hot ? 0.95 : 0.7})`;
+          // Im Solo verblassen fremde Zellen
+          const muted = soloist !== null && cell.user !== soloist;
+          const alpha = muted ? 0.18 : hot ? 0.95 : 0.7;
+          ctx.fillStyle = `hsla(${hue}, 85%, ${hot ? 68 : 52}%, ${alpha})`;
           ctx.beginPath();
           ctx.roundRect(x + 2, y + 2, cw - 4, ch - 4, 4);
           ctx.fill();
-          if (hot) {
+          if (hot && !muted) {
             ctx.shadowColor = `hsl(${hue} 90% 70%)`;
             ctx.shadowBlur = 14;
             ctx.fill();
             ctx.shadowBlur = 0;
           }
-          ctx.fillStyle = 'rgba(0,0,0,0.75)';
+          // Versiegelte Zellen tragen einen hellen Ring
+          if (cell.sealedUntil && cell.sealedUntil > now) {
+            ctx.strokeStyle = `rgba(255,255,255,${muted ? 0.25 : 0.85})`;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.roundRect(x + 2, y + 2, cw - 4, ch - 4, 4);
+            ctx.stroke();
+            ctx.lineWidth = 1;
+          }
+          ctx.fillStyle = `rgba(0,0,0,${muted ? 0.35 : 0.75})`;
           ctx.font = cellFont(cw, ch);
           ctx.fillText(cell.token, x + cw / 2, y + ch / 2);
         } else {

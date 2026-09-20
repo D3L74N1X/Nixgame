@@ -50,8 +50,18 @@ function onMessage(msg: ServerMessage): void {
       if (!grid) break;
       grid.cells[msg.row][msg.col] = msg.cell;
       if (msg.cell) {
-        hue = voiceFor(msg.cell.user).hue;
+        if (!grid.solo) hue = voiceFor(msg.cell.user).hue;
         hud.addLine(`setzt ${msg.cell.token} (Spalte ${msg.col + 1})`, msg.cell.user);
+      }
+      regen();
+      break;
+    case 'solo':
+      if (!grid) break;
+      grid.solo = msg.solo;
+      if (msg.solo) {
+        hue = voiceFor(msg.solo.user).hue;
+        energy = 1;
+        pulse = 1;
       }
       regen();
       break;
@@ -70,7 +80,7 @@ function onMessage(msg: ServerMessage): void {
     case 'gift':
       energy = Math.min(1, energy + Math.min(0.6, msg.value / 300));
       pulse = 1;
-      hue = voiceFor(msg.user).hue;
+      if (!grid?.solo) hue = voiceFor(msg.user).hue;
       hud.addLine(`🎁 ${msg.giftName} (${msg.value} 💎)`, msg.user);
       break;
   }
@@ -106,8 +116,9 @@ function frame(now: number): void {
   const dt = Math.min(0.1, (now - lastT) / 1000);
   lastT = now;
 
-  // Energie fällt zur Basis zurück, Puls klingt schnell ab
-  energy = ENERGY_BASE + (energy - ENERGY_BASE) * Math.exp(-dt / 2.5);
+  // Energie fällt zur Basis zurück, Puls klingt schnell ab — im Solo bleibt sie hoch
+  const floor = grid?.solo ? 0.7 : ENERGY_BASE;
+  energy = floor + (energy - floor) * Math.exp(-dt / 2.5);
   pulse *= Math.exp(-dt / 0.15);
 
   const stepFloat = clock.stepFloat();
@@ -119,7 +130,7 @@ function frame(now: number): void {
       const cell = row[step];
       if (cell && !users.includes(cell.user)) users.push(cell.user);
     }
-    hud.setCredit(users);
+    hud.setCredit(users, grid.solo?.user ?? null);
     if (users.length > 0 && armed) pulse = Math.max(pulse, 0.8);
   }
 

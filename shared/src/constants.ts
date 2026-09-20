@@ -62,6 +62,21 @@ export const BPM_COOLDOWN_MS = 15_000;
 export const DECAY_AFTER_MS = 4 * 60_000;
 export const DECAY_INTERVAL_MS = 20_000;
 
+/**
+ * Gift-Eskalation (Diamanten, kumulativ — ein grosses Gift bekommt alles):
+ *   ≥ GIFT_SEAL_MIN   eigene Zellen SEAL_MS lang gegen Verfall versiegeln
+ *   ≥ GIFT_STEAL_MIN  pro GIFT_STEAL_MIN Diamanten ein Diebstahl (max. STEAL_MAX_CREDITS):
+ *                     das nächste Kommando auf eine fremde Zelle übernimmt sie
+ *   ≥ GIFT_SOLO_MIN   SOLO_MS lang spielen nur die eigenen Zellen, der Rest wird gedämpft
+ */
+export const GIFT_SEAL_MIN = 1;
+export const GIFT_STEAL_MIN = 100;
+export const GIFT_SOLO_MIN = 1000;
+export const SEAL_MS = 10 * 60_000;
+export const STEAL_MAX_CREDITS = 5;
+export const STEAL_TTL_MS = 10 * 60_000;
+export const SOLO_MS = 60_000;
+
 export const WS_PORT_DEFAULT = 8787;
 
 export const ROW_LABELS = ['bd', 'sd', 'hh', 'oh', 'fx', '♪', '♪', '♪'] as const;

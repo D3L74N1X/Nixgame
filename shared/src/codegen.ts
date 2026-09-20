@@ -62,16 +62,32 @@ export function gridToStrudel(state: GridState): string {
       `    .gain(.2).attack(1.5).release(2).lpf(600).room(.7).size(.9)`,
   );
 
+  // Solo: nur die Zellen des Solisten spielen voll; fremde Drums laufen
+  // gedämpft als Bett weiter, fremde Melodien schweigen.
+  const soloist = state.solo?.user ?? null;
+  const own = (cells: (Cell | null)[]) =>
+    soloist ? cells.map((c) => (c && c.user === soloist ? c : null)) : cells;
+  const foreign = (cells: (Cell | null)[]) =>
+    cells.map((c) => (c && c.user !== soloist ? c : null));
+
   for (let row = 0; row <= FX_ROW; row++) {
     const cells = state.cells[row];
     if (!rowActive(cells)) continue;
-    layers.push(
-      `  s("${rowTokens(cells, (c) => c.token)}").bank("${DRUM_BANK}")${drumFlavor(row)}`,
-    );
+    const mine = own(cells);
+    if (rowActive(mine)) {
+      layers.push(
+        `  s("${rowTokens(mine, (c) => c.token)}").bank("${DRUM_BANK}")${drumFlavor(row)}`,
+      );
+    }
+    if (soloist && rowActive(foreign(cells))) {
+      layers.push(
+        `  s("${rowTokens(foreign(cells), (c) => c.token)}").bank("${DRUM_BANK}").gain(.25).lpf(700)`,
+      );
+    }
   }
 
   for (let row = FIRST_MELODIC_ROW; row < state.cells.length; row++) {
-    const cells = state.cells[row];
+    const cells = own(state.cells[row]);
     if (!rowActive(cells)) continue;
     const notes = rowTokens(cells, (c) => c.token);
     const synths = rowTokens(cells, (c) => voiceFor(c.user).synth);

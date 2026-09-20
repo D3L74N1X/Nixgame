@@ -4,12 +4,21 @@ export interface Cell {
   token: string;
   /** Zeitpunkt der (letzten) Beanspruchung, ms epoch — Basis für den Verfall. */
   since?: number;
+  /** Bis hierhin (ms epoch) ist die Zelle per Gift gegen Verfall versiegelt. */
+  sealedUntil?: number;
+}
+
+/** Solo: 60 s gehört die Bühne einem Top-Gifter — nur seine Zellen spielen. */
+export interface Solo {
+  user: string;
+  until: number;
 }
 
 export interface GridState {
   bpm: number;
   /** [row][col] */
   cells: (Cell | null)[][];
+  solo?: Solo | null;
 }
 
 /** Persistente "Stimme" eines Users, deterministisch aus dem Handle abgeleitet. */
@@ -41,4 +50,5 @@ export type ServerMessage =
   | { type: 'bpm'; bpm: number; user: string }
   | { type: 'ticker'; text: string; user?: string }
   | { type: 'like'; count: number }
-  | { type: 'gift'; user: string; giftName: string; value: number };
+  | { type: 'gift'; user: string; giftName: string; value: number }
+  | { type: 'solo'; solo: Solo | null };

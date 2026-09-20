@@ -73,6 +73,18 @@ Der Codegen (`shared/src/codegen.ts`) erzeugt keinen Chiptune-Loop, sondern:
 - **Stimmen** sind GM-Soundfonts (E-Piano, Kalimba, Marimba, Vibraphon, Koto, Pad, …) mit Raum, tempo-synchronem Delay, langsam wanderndem Filter und gelegentlichen Oktavsprüngen.
 - **Drone:** Grundton + Quinte als leiser Pad-Teppich, folgt der Skalenreise — die Entität summt, auch wenn das Grid leer ist.
 
+## Gift-Eskalation
+
+Bauen ist kostenlos. Gifts kaufen **Macht über das Territorium** — kumulativ, ein grosses Gift bekommt alles (Schwellen in `shared/src/constants.ts`):
+
+| Diamanten | Wirkung |
+|---|---|
+| ≥ 1 (jedes Gift) | 🔒 Eigene Zellen 10 min gegen den Verfall versiegelt (heller Ring im Grid) |
+| ≥ 100 | 🗡️ Pro 100 💎 ein **Diebstahl** (max. 5, 10 min gültig): das nächste Kommando auf eine fremde Zelle übernimmt sie |
+| ≥ 1000 | ⚡ **Solo** 60 s: nur die eigenen Zellen spielen, fremde Melodien schweigen, fremde Drums laufen gedämpft; die Entität trägt die Farbe des Solisten, das Grid dimmt alle anderen |
+
+Ein neues Solo löst das laufende ab. Likes geben der Entität weiterhin nur Energie.
+
 ## Entität steuern (Streamer)
 
 | Taste | Wirkung |
@@ -84,5 +96,5 @@ Die Slit-Scan-Scanlinie läuft synchron zum Playhead des Grids.
 
 ## Roadmap
 
-- Gift-Eskalation: Zellen "stehlen", Effekt-Layer, REPL-Slot (60 s echtes Live-Coding für Top-Gifter, sandboxed)
+- REPL-Slot: 60 s echtes Live-Coding für Top-Gifter (sandboxed Whitelist)
 - Archiv/Sediment: alte Patterns kehren als Geister-Echos zurück

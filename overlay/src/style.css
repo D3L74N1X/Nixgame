@@ -113,6 +113,22 @@ body {
   display: none;
 }
 
+#credit.solo {
+  font-weight: bold;
+  letter-spacing: 0.06em;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  animation: solo-pulse 1s ease-in-out infinite alternate;
+}
+
+@keyframes solo-pulse {
+  from {
+    box-shadow: 0 0 6px rgba(255, 255, 255, 0.2);
+  }
+  to {
+    box-shadow: 0 0 18px rgba(255, 255, 255, 0.6);
+  }
+}
+
 #hint {
   position: absolute;
   top: calc(var(--repl-max-h) + 24px);
