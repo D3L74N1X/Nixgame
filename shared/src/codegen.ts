@@ -19,10 +19,10 @@ function rowActive(row: (Cell | null)[]): boolean {
   return row.some((c) => c !== null);
 }
 
-/** Bass-Zeile: Noten eine Oktave tiefer, aber nicht unter Oktave 2 (Handy-Lautsprecher). */
+/** Bass-Zeile: Noten zwei Oktaven tiefer, Untergrenze Oktave 1 (Sub-Bass). */
 function bassToken(token: string): string {
   const octave = Number(token.at(-1));
-  return octave >= 3 ? `${token.slice(0, -1)}${octave - 1}` : token;
+  return `${token.slice(0, -1)}${Math.max(1, octave - 2)}`;
 }
 
 const n2 = (x: number) => Number(x.toFixed(2));
@@ -107,7 +107,7 @@ export function gridToStrudel(state: GridState): string {
     );
   } else {
     layers.push(
-      `  n("${b.pattern}").scale("${journeyScales}").add(note(-12))\n` +
+      `  n("${b.pattern}").scale("${journeyScales}").add(note(-24))\n` +
         `    ${bassChain}`,
     );
   }

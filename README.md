@@ -54,7 +54,7 @@ Der Server verbindet sich über [tiktok-live-connector](https://github.com/zerod
 |---|---|
 | `!drum bd 5` | Percussion in Spalte 5 (`bd sd hh oh` = feste Zeilen; `cp rim lt mt ht cr rd` → fx-Zeile) |
 | `!note c3 5` | Note in Spalte 5, erste freie melodische Zeile (`c2`–`b5`, auch `#`/`b`) |
-| `!bass c2 5` | Note in der Bass-Zeile (Zeile 6): eine Oktave tiefer, Bass-Timbre des Stils |
+| `!bass c3 5` | Note in der Bass-Zeile (Zeile 6): zwei Oktaven tiefer (Sub-Bass, min. Oktave 1), Bass-Timbre des Stils |
 | `!cell 5 7 e4` | Direkte Zellen-Adressierung: Spalte, Zeile, Token |
 | `!clear 5 7` | Eigene Zelle räumen |
 | `!bpm 140` | Tempo 60–200 (15 s Cooldown) |
@@ -73,7 +73,7 @@ Der Codegen (`shared/src/codegen.ts`) erzeugt keinen Chiptune-Loop, sondern:
 - **Harmonische Reise:** Alle 4 Takte wandert die Skala (je Stil, z. B. `C:lydian → G:major → D:mixolydian → …`), Zuschauer-Noten werden per `.scale()` darauf quantisiert — auch zufällige Eingaben klingen musikalisch, und derselbe Grid-Zustand klingt in jedem Durchlauf anders.
 - **Stimmen** sind GM-Soundfonts und weiche Synths (Pads, E-Piano, Kalimba, Vibraphon, Sinus, …) mit Raum, tempo-synchronem Delay, langsam wanderndem Filter und gelegentlichen Oktavsprüngen.
 - **Drone:** Grundton-Akkord als leiser Teppich, folgt der Skalenreise — die Entität summt, auch wenn das Grid leer ist.
-- **Bassline:** Jeder Stil hat ein Bass-Pattern in Skalenstufen (folgt der Skalenreise, eine Oktave unter der Skala). Es spielt, solange die Bass-Zeile leer ist — schreiben Zuschauer per `!bass` eigenen Bass, übernimmt der.
+- **Bassline:** Jeder Stil hat ein Bass-Pattern in Skalenstufen (folgt der Skalenreise, zwei Oktaven unter der Skala — Sub-Bass). Es spielt, solange die Bass-Zeile leer ist — schreiben Zuschauer per `!bass` eigenen Bass, übernimmt der.
 
 ## Gift-Eskalation
 

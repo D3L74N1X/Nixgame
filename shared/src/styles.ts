@@ -48,7 +48,7 @@ export interface Style {
   /**
    * Bass: Timbre für die Bass-Zeile und die Auto-Bassline. `pattern` sind
    * Skalenstufen (0 = Grundton) in Mini-Notation, ein Zyklus = ein Takt;
-   * gespielt eine Oktave unter der Skalen-Oktave, folgt der Skalenreise.
+   * gespielt zwei Oktaven unter der Skalen-Oktave (Sub-Bass), folgt der Skalenreise.
    */
   bass: { s: string; release: number; gain: number; lpf: number; pattern: string };
   drums: {
