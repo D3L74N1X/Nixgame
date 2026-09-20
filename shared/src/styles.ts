@@ -3,6 +3,11 @@
  * Der Streamer schaltet sie über die Toolbar um; Zuschauer-Zellen bleiben,
  * klingen aber sofort anders — dasselbe Territorium, ein anderes Wetter.
  *
+ * Klangrichtung: sanfte elektronische Musik (Ambient, Minimal/Dub-Techno,
+ * IDM). Keine klirrenden Leads, keine scheppernden Hi-Hats: Drums laufen
+ * überall tiefpass-gefiltert mit leisen Hats/Snares, Stimmen sind weiche
+ * Plucks, Pads und Sinus/Dreieck.
+ *
  * Drum-Banks müssen alle Sounds `bd sd hh oh cp rim lt mt ht cr rd` haben
  * (geprüft gegen tidal-drum-machines: 909, LinnDrum, MPC60, SP-12, DMX, …).
  */
@@ -37,122 +42,26 @@ export interface Style {
     size: number;
     delay: number;
     feedback: number;
-    /** Zusätzliche Kette (z. B. Distortion), roher Strudel-Code — nur aus diesem Modul. */
+    /** Zusätzliche Kette, roher Strudel-Code — nur aus diesem Modul. */
     extra: string;
   };
-  drums: { gain: number; lpf: number | null; room: number; extra: string };
+  drums: {
+    gain: number;
+    lpf: number | null;
+    room: number;
+    /** Hi-Hat-Pegel relativ zu gain (Hats sind das, was am schnellsten nervt). */
+    hats: number;
+    extra: string;
+    /** Zusätzliche Kette nur für die Hi-Hat-Zeile (z. B. IDM-Stotterer). */
+    hatExtra: string;
+  };
   swing: number;
 }
 
-export type StyleId = 'deep' | 'lofi' | 'rave' | 'dream';
-export const DEFAULT_STYLE: StyleId = 'deep';
+export type StyleId = 'dream' | 'minimal' | 'idm' | 'dub';
+export const DEFAULT_STYLE: StyleId = 'dream';
 
 export const STYLES: Record<StyleId, Style> = {
-  deep: {
-    id: 'deep',
-    label: 'Deep',
-    bpm: 120,
-    bank: 'RolandTR909',
-    voices: [
-      { s: 'gm_epiano1', release: 0.4 },
-      { s: 'gm_kalimba', release: 0.5 },
-      { s: 'gm_marimba', release: 0.3 },
-      { s: 'gm_vibraphone', release: 0.8 },
-      { s: 'gm_music_box', release: 0.6 },
-      { s: 'gm_celesta', release: 0.5 },
-      { s: 'gm_koto', release: 0.4 },
-      { s: 'gm_electric_guitar_muted', release: 0.15 },
-      { s: 'gm_synth_bass_2', release: 0.2 },
-      { s: 'gm_pad_warm', release: 1.2 },
-      { s: 'gm_lead_2_sawtooth', release: 0.25 },
-      { s: 'gm_steel_drums', release: 0.5 },
-    ],
-    journey: [
-      { scale: 'C:minor', drone: '[c2,g2]' },
-      { scale: 'C:dorian', drone: '[c2,g2]' },
-      { scale: 'Ab:lydian', drone: '[ab1,eb2]' },
-      { scale: 'G:minor', drone: '[g1,d2]' },
-      { scale: 'Bb:major', drone: '[bb1,f2]' },
-      { scale: 'C:minor:pentatonic', drone: '[c2,g2]' },
-    ],
-    drone: { s: 'gm_pad_warm', gain: 0.2, lpf: 600 },
-    melodic: {
-      gain: 0.55, lpf: [1200, 6000], lpq: 0, room: 0.4, size: 0.85,
-      delay: 0.2, feedback: 0.35, extra: '',
-    },
-    drums: { gain: 1, lpf: null, room: 0.15, extra: '' },
-    swing: 0.06,
-  },
-
-  lofi: {
-    id: 'lofi',
-    label: 'Lo-Fi',
-    bpm: 84,
-    bank: 'AkaiMPC60',
-    voices: [
-      { s: 'gm_epiano1', release: 0.6 },
-      { s: 'gm_epiano2', release: 0.6 },
-      { s: 'gm_vibraphone', release: 1 },
-      { s: 'gm_acoustic_guitar_nylon', release: 0.5 },
-      { s: 'gm_flute', release: 0.4 },
-      { s: 'gm_electric_bass_finger', release: 0.3 },
-      { s: 'gm_clavinet', release: 0.2 },
-      { s: 'gm_harmonica', release: 0.4 },
-      { s: 'gm_muted_trumpet', release: 0.4 },
-      { s: 'gm_acoustic_bass', release: 0.3 },
-      { s: 'gm_electric_guitar_jazz', release: 0.5 },
-      { s: 'gm_dulcimer', release: 0.7 },
-    ],
-    journey: [
-      { scale: 'C:major:pentatonic', drone: '[c2,g2]' },
-      { scale: 'D:dorian', drone: '[d2,a2]' },
-      { scale: 'F:lydian', drone: '[f1,c2]' },
-      { scale: 'A:minor', drone: '[a1,e2]' },
-      { scale: 'G:mixolydian', drone: '[g1,d2]' },
-      { scale: 'C:major', drone: '[c2,g2]' },
-    ],
-    drone: { s: 'gm_pad_choir', gain: 0.15, lpf: 500 },
-    melodic: {
-      gain: 0.5, lpf: [600, 2600], lpq: 0, room: 0.5, size: 0.8,
-      delay: 0.3, feedback: 0.4, extra: '.coarse(3)',
-    },
-    drums: { gain: 0.85, lpf: 3200, room: 0.2, extra: '.coarse(2)' },
-    swing: 0.13,
-  },
-
-  rave: {
-    id: 'rave',
-    label: 'Rave',
-    bpm: 138,
-    bank: 'EmuSP12',
-    voices: [
-      { s: 'sawtooth', release: 0.15 },
-      { s: 'square', release: 0.12 },
-      { s: 'supersaw', release: 0.2 },
-      { s: 'triangle', release: 0.15 },
-      { s: 'gm_lead_2_sawtooth', release: 0.2 },
-      { s: 'gm_synth_bass_1', release: 0.15 },
-      { s: 'gm_lead_8_bass_lead', release: 0.15 },
-      { s: 'gm_lead_1_square', release: 0.15 },
-      { s: 'gm_synth_strings_1', release: 0.4 },
-      { s: 'gm_lead_5_charang', release: 0.15 },
-    ],
-    journey: [
-      { scale: 'C:minor', drone: '[c1,c2]' },
-      { scale: 'C:phrygian', drone: '[c1,c2]' },
-      { scale: 'F:minor', drone: '[f1,f2]' },
-      { scale: 'G:phrygian', drone: '[g1,g2]' },
-      { scale: 'C:minor:pentatonic', drone: '[c1,c2]' },
-    ],
-    drone: { s: 'sawtooth', gain: 0.12, lpf: 300 },
-    melodic: {
-      gain: 0.45, lpf: [400, 5000], lpq: 8, room: 0.2, size: 0.6,
-      delay: 0.15, feedback: 0.3, extra: '.lpenv(2).distort(.15)',
-    },
-    drums: { gain: 1, lpf: null, room: 0.08, extra: '.shape(.25)' },
-    swing: 0,
-  },
-
   dream: {
     id: 'dream',
     label: 'Dream',
@@ -184,8 +93,116 @@ export const STYLES: Record<StyleId, Style> = {
       gain: 0.45, lpf: [800, 3200], lpq: 0, room: 0.8, size: 0.95,
       delay: 0.4, feedback: 0.5, extra: '',
     },
-    drums: { gain: 0.55, lpf: 2200, room: 0.5, extra: '' },
+    drums: { gain: 0.55, lpf: 2200, room: 0.5, hats: 0.5, extra: '', hatExtra: '' },
     swing: 0,
+  },
+
+  minimal: {
+    id: 'minimal',
+    label: 'Minimal',
+    bpm: 124,
+    bank: 'RolandTR909',
+    voices: [
+      { s: 'sine', release: 0.25 },
+      { s: 'triangle', release: 0.2 },
+      { s: 'gm_epiano1', release: 0.3 },
+      { s: 'gm_marimba', release: 0.3 },
+      { s: 'gm_kalimba', release: 0.4 },
+      { s: 'gm_synth_bass_2', release: 0.2 },
+      { s: 'gm_pad_poly', release: 0.6 },
+      { s: 'gm_vibraphone', release: 0.6 },
+      { s: 'gm_electric_guitar_muted', release: 0.15 },
+      { s: 'gm_pad_warm', release: 0.8 },
+    ],
+    journey: [
+      { scale: 'C:minor', drone: '[c1,c2]' },
+      { scale: 'C:dorian', drone: '[c1,c2]' },
+      { scale: 'Eb:major', drone: '[eb1,eb2]' },
+      { scale: 'G:minor', drone: '[g1,g2]' },
+      { scale: 'C:minor:pentatonic', drone: '[c1,c2]' },
+    ],
+    drone: { s: 'sine', gain: 0.18, lpf: 200 },
+    melodic: {
+      gain: 0.42, lpf: [500, 2200], lpq: 0, room: 0.5, size: 0.9,
+      delay: 0.35, feedback: 0.55, extra: '',
+    },
+    // 909 ja, aber gefiltert und mit fast unhörbaren Hats — Dub-Techno-Bett.
+    drums: { gain: 0.75, lpf: 2600, room: 0.35, hats: 0.35, extra: '', hatExtra: '' },
+    swing: 0.03,
+  },
+
+  idm: {
+    id: 'idm',
+    label: 'IDM',
+    bpm: 98,
+    bank: 'LinnDrum',
+    voices: [
+      { s: 'gm_epiano2', release: 0.6 },
+      { s: 'gm_pad_warm', release: 1.2 },
+      { s: 'gm_vibraphone', release: 0.9 },
+      { s: 'gm_music_box', release: 0.8 },
+      { s: 'gm_celesta', release: 0.7 },
+      { s: 'gm_flute', release: 0.5 },
+      { s: 'gm_synth_bass_2', release: 0.25 },
+      { s: 'triangle', release: 0.3 },
+      { s: 'gm_kalimba', release: 0.6 },
+      { s: 'gm_pad_sweep', release: 1.2 },
+      { s: 'gm_acoustic_guitar_nylon', release: 0.5 },
+    ],
+    journey: [
+      { scale: 'D:dorian', drone: '[d2,a2]' },
+      { scale: 'F:lydian', drone: '[f1,c2]' },
+      { scale: 'A:minor', drone: '[a1,e2]' },
+      { scale: 'C:major', drone: '[c2,g2]' },
+      { scale: 'G:mixolydian', drone: '[g1,d2]' },
+      { scale: 'E:minor:pentatonic', drone: '[e2,b2]' },
+    ],
+    drone: { s: 'gm_pad_warm', gain: 0.16, lpf: 700 },
+    // Leichte Stereo-Bewegung; kein Bitcrush, keine Verzerrung.
+    melodic: {
+      gain: 0.45, lpf: [700, 2800], lpq: 0, room: 0.55, size: 0.85,
+      delay: 0.3, feedback: 0.45, extra: '.pan(sine.range(.35,.65).slow(7))',
+    },
+    // LinnDrum weich gefiltert; die Hats stottern gelegentlich (ply) — der IDM-Tick.
+    drums: {
+      gain: 0.6, lpf: 2400, room: 0.4, hats: 0.45, extra: '',
+      hatExtra: '.sometimesBy(.12, x => x.ply(3).gain(.6))',
+    },
+    swing: 0.05,
+  },
+
+  dub: {
+    id: 'dub',
+    label: 'Dub',
+    bpm: 116,
+    bank: 'RolandTR505',
+    voices: [
+      { s: 'gm_epiano1', release: 0.5 },
+      { s: 'gm_electric_guitar_clean', release: 0.3 },
+      { s: 'gm_pad_warm', release: 1 },
+      { s: 'gm_vibraphone', release: 0.8 },
+      { s: 'sine', release: 0.3 },
+      { s: 'gm_synth_bass_2', release: 0.25 },
+      { s: 'gm_epiano2', release: 0.5 },
+      { s: 'gm_marimba', release: 0.4 },
+      { s: 'gm_pad_choir', release: 1 },
+      { s: 'triangle', release: 0.3 },
+    ],
+    journey: [
+      { scale: 'A:minor', drone: '[a1,e2]' },
+      { scale: 'A:dorian', drone: '[a1,e2]' },
+      { scale: 'F:major', drone: '[f1,c2]' },
+      { scale: 'D:minor', drone: '[d2,a2]' },
+      { scale: 'A:minor:pentatonic', drone: '[a1,e2]' },
+    ],
+    drone: { s: 'gm_pad_warm', gain: 0.18, lpf: 500 },
+    // Langes, tempo-synchrones Echo mit hohem Feedback: der Dub-Raum.
+    melodic: {
+      gain: 0.42, lpf: [400, 1800], lpq: 0, room: 0.7, size: 0.92,
+      delay: 0.45, feedback: 0.62, extra: '',
+    },
+    drums: { gain: 0.65, lpf: 2000, room: 0.5, hats: 0.4, extra: '', hatExtra: '' },
+    swing: 0.04,
   },
 };
 

@@ -19,20 +19,23 @@ function rowActive(row: (Cell | null)[]): boolean {
   return row.some((c) => c !== null);
 }
 
-/** Zeilen-spezifische Würze für die Drums: Akzente, Fills, Raum. */
+const n2 = (x: number) => Number(x.toFixed(2));
+
+/** Zeilen-spezifische Würze für die Drums: Akzente, Fills, Raum — sanft. */
 function drumFlavor(row: number, st: Style): string {
   const g = st.drums.gain;
+  const h = g * st.drums.hats;
   switch (row) {
     case 0: // bd
-      return `.gain(${g}).lastOf(${PHRASE_BARS * 2}, x => x.degradeBy(.5))`;
-    case 1: // sd
-      return `.gain(${g * 0.85}).room(${st.drums.room + 0.1})`;
-    case 2: // hh — Akzente auf den Achteln, alle 8 Takte ein Fill
-      return `.gain("[${g * 0.85} ${g * 0.5} ${g * 0.7} ${g * 0.5}]*4").lastOf(${PHRASE_BARS}, x => x.ply(2))`;
+      return `.gain(${n2(g)}).lastOf(${PHRASE_BARS * 2}, x => x.degradeBy(.5))`;
+    case 1: // sd — zurückgenommen, mit Raum statt Knall
+      return `.gain(${n2(g * 0.65)}).room(${n2(st.drums.room + 0.15)})`;
+    case 2: // hh — leise Achtel-Akzente, alle 8 Takte ein Fill
+      return `.gain("[${n2(h)} ${n2(h * 0.55)} ${n2(h * 0.8)} ${n2(h * 0.55)}]*4").lastOf(${PHRASE_BARS}, x => x.ply(2))${st.drums.hatExtra}`;
     case 3: // oh
-      return `.gain(${g * 0.6}).release(.12)`;
+      return `.gain(${n2(h * 0.9)}).release(.12)`;
     default: // fx
-      return `.gain(${g * 0.75}).room(${st.drums.room})`;
+      return `.gain(${n2(g * 0.7)}).room(${n2(st.drums.room)})`;
   }
 }
 

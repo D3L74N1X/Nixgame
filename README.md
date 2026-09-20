@@ -68,10 +68,53 @@ Regeln: Freie Zellen kann jeder beanspruchen, fremde Zellen sind tabu (Territori
 
 Der Codegen (`shared/src/codegen.ts`) erzeugt keinen Chiptune-Loop, sondern:
 
-- **Drums** aus der TR-909-Bank mit Swing, Hi-Hat-Akzenten, Fill alle 8 Takte und Kick-Aussetzer alle 16.
-- **Harmonische Reise:** Alle 4 Takte wandert die Skala (`C:minor → C:dorian → Ab:lydian → G:minor → Bb:major → C:minor:pentatonic`), Zuschauer-Noten werden per `.scale()` darauf quantisiert — auch zufällige Eingaben klingen musikalisch, und derselbe Grid-Zustand klingt in jedem Durchlauf anders.
-- **Stimmen** sind GM-Soundfonts (E-Piano, Kalimba, Marimba, Vibraphon, Koto, Pad, …) mit Raum, tempo-synchronem Delay, langsam wanderndem Filter und gelegentlichen Oktavsprüngen.
-- **Drone:** Grundton + Quinte als leiser Pad-Teppich, folgt der Skalenreise — die Entität summt, auch wenn das Grid leer ist.
+- **Drums** aus einer Drum-Machine-Bank (je Stil), tiefpass-gefiltert, mit leisen Hi-Hat-Akzenten, Fill alle 8 Takte und Kick-Aussetzer alle 16.
+- **Harmonische Reise:** Alle 4 Takte wandert die Skala (je Stil, z. B. `C:lydian → G:major → D:mixolydian → …`), Zuschauer-Noten werden per `.scale()` darauf quantisiert — auch zufällige Eingaben klingen musikalisch, und derselbe Grid-Zustand klingt in jedem Durchlauf anders.
+- **Stimmen** sind GM-Soundfonts und weiche Synths (Pads, E-Piano, Kalimba, Vibraphon, Sinus, …) mit Raum, tempo-synchronem Delay, langsam wanderndem Filter und gelegentlichen Oktavsprüngen.
+- **Drone:** Grundton-Akkord als leiser Teppich, folgt der Skalenreise — die Entität summt, auch wenn das Grid leer ist.
+
+## Gift-Eskalation
+
+Bauen ist kostenlos. Gifts kaufen **Macht über das Territorium** — kumulativ, ein grosses Gift bekommt alles (Schwellen in `shared/src/constants.ts`):
+
+| Diamanten | Wirkung |
+|---|---|
+| ≥ 1 (jedes Gift) | 🔒 Eigene Zellen 10 min gegen den Verfall versiegelt (heller Ring im Grid) |
+| ≥ 100 | 🗡️ Pro 100 💎 ein **Diebstahl** (max. 5, 10 min gültig): das nächste Kommando auf eine fremde Zelle übernimmt sie |
+| ≥ 1000 | ⚡ **Solo** 60 s: nur die eigenen Zellen spielen, fremde Melodien schweigen, fremde Drums laufen gedämpft; die Entität trägt die Farbe des Solisten, das Grid dimmt alle anderen |
+
+Ein neues Solo löst das laufende ab. Likes geben der Entität weiterhin nur Energie.
+
+## Streamer-Eingriffe (OBS „Interagieren")
+
+Der Streamer ist Moderator: Territorium-Regel und BPM-Cooldown gelten für ihn nicht. Alles geht per Maus im OBS-Interact-Fenster (die Toolbar erscheint bei Mausbewegung und verschwindet nach 4 s):
+
+| Eingabe | Wirkung |
+|---|---|
+| Linksklick auf leere Zelle | setzt den Zeilen-Sound bzw. die zuletzt benutzte Note |
+| Linksklick auf belegte Zelle | nächster fx-Sound / nächster Halbton |
+| Mausrad auf Zelle | fx-Sound bzw. Note hoch/runter |
+| Rechtsklick | Zelle löschen (auch fremde) |
+| Toolbar **Stil** | Preset wechseln (Tempo springt auf die Stil-Voreinstellung) |
+| Toolbar **BPM −/+** | Tempo in 5er-Schritten |
+| Toolbar **Territorium räumen** | zweimal klicken → Grid leer |
+| Taste `1` / `2` / `3` | Entität: Punktwolke / ASCII / Slit-Scan (deaktiviert Auto-Zyklus) |
+| Taste `a` | Auto-Zyklus an/aus (Moduswechsel alle 40 s) |
+
+Die Kommandos laufen als Nachrichten Overlay → Server über denselben WebSocket; der Server lauscht deshalb nur auf `127.0.0.1` (`WS_HOST` überschreibt das).
+
+## Stil-Presets
+
+`shared/src/styles.ts` — ein Stil bündelt Drum-Bank, Stimmen-Set, Skalenreise, Drone und Effekt-Charakter. Zuschauer-Zellen bleiben beim Wechsel erhalten, klingen aber sofort anders. Klangrichtung durchweg **sanfte Elektronik**: Drums überall tiefpass-gefiltert, Hi-Hats und Snares zurückgenommen (`drums.hats`), Stimmen sind weiche Plucks, Pads, Sinus/Dreieck — keine klirrenden Leads.
+
+| Stil | BPM | Drums | Charakter |
+|---|---|---|---|
+| **Dream** (Standard) | 92 | Oberheim DMX | Pads/Chor/Harfe mit langem Release, Lydisch/Dur, grosser Raum |
+| **Minimal** | 124 | TR-909, gefiltert, Hats fast unhörbar | Sinus/Dreieck/E-Piano/Kalimba, Moll/Dorisch, Sinus-Sub-Drone, Dub-Delay |
+| **IDM** | 98 | LinnDrum, weich; Hats stottern gelegentlich | E-Piano/Vibraphon/Music-Box/Flöte, Dorisch/Lydisch, langsames Stereo-Pendeln |
+| **Dub** | 116 | TR-505, gefiltert | E-Piano/Clean-Gitarre/Pads, tiefer Filter, langes tempo-synchrones Echo mit hohem Feedback |
+
+Die Drum-Bank muss alle Sounds `bd sd hh oh cp rim lt mt ht cr rd` enthalten — vollständig sind u. a. RolandTR909, LinnDrum, AkaiMPC60, EmuSP12, OberheimDMX, RolandTR505/626, RolandR8 (TR-808 fehlt `rd`).
 
 ## Gift-Eskalation
 
