@@ -37,6 +37,7 @@ export interface UserVoice {
 export type Command =
   | { type: 'drum'; sound: string; col: number }
   | { type: 'note'; note: string; col: number }
+  | { type: 'bass'; note: string; col: number }
   | { type: 'cell'; col: number; row: number; token: string }
   | { type: 'clear'; col: number; row: number }
   | { type: 'bpm'; bpm: number };

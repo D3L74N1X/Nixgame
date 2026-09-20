@@ -1,6 +1,7 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 import {
+  BASS_ROW,
   BPM_COOLDOWN_MS,
   DECAY_AFTER_MS,
   DEFAULT_STYLE,
@@ -14,7 +15,6 @@ import {
   STEAL_MAX_CREDITS,
   STEAL_TTL_MS,
   DEFAULT_BPM,
-  FIRST_MELODIC_ROW,
   GRID_COLS,
   GRID_ROWS,
   isValidToken,
@@ -103,17 +103,20 @@ export class GridStore {
         return this.setCell(user, rowForSound(cmd.sound), cmd.col, cmd.sound, privileged);
       case 'cell':
         return this.setCell(user, cmd.row, cmd.col, cmd.token, privileged);
+      case 'bass':
+        return this.setCell(user, BASS_ROW, cmd.col, cmd.note, privileged);
       case 'note': {
-        // Erste freie melodische Zeile; ersatzweise eine eigene Zelle ersetzen.
+        // Erste freie melodische Zeile (ohne Bass — dafür gibt es !bass);
+        // ersatzweise eine eigene Zelle ersetzen.
         let target = -1;
-        for (let row = FIRST_MELODIC_ROW; row < GRID_ROWS; row++) {
+        for (let row = BASS_ROW + 1; row < GRID_ROWS; row++) {
           if (!this.state.cells[row][cmd.col]) {
             target = row;
             break;
           }
         }
         if (target < 0) {
-          for (let row = FIRST_MELODIC_ROW; row < GRID_ROWS; row++) {
+          for (let row = BASS_ROW + 1; row < GRID_ROWS; row++) {
             if (this.state.cells[row][cmd.col]?.user === user) {
               target = row;
               break;

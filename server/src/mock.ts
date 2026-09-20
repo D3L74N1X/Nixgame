@@ -23,7 +23,8 @@ function randCol(): number {
 function randomChatLine(): string {
   const r = Math.random();
   if (r < 0.45) return `!drum ${pick([...PERC_FIXED_SOUNDS, ...FX_SOUNDS])} ${randCol()}`;
-  if (r < 0.8) return `!note ${pick(NOTES)} ${randCol()}`;
+  if (r < 0.72) return `!note ${pick(NOTES)} ${randCol()}`;
+  if (r < 0.8) return `!bass ${pick(['c2', 'g2', 'eb2', 'f2', 'a2'])} ${randCol()}`;
   if (r < 0.87) return `!clear ${randCol()} ${1 + Math.floor(Math.random() * 8)}`;
   if (r < 0.92) return `!bpm ${90 + Math.floor(Math.random() * 8) * 10}`;
   return pick(['nice', 'was ist das hier?', 'mehr bass!!', '🔥🔥🔥']);

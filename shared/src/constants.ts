@@ -1,9 +1,14 @@
 export const GRID_COLS = 16;
 export const GRID_ROWS = 8;
 
-/** Zeilen 0..3: feste Percussion-Sounds. Zeile 4: freie Percussion ("fx"). Zeilen 5..7: melodisch. */
+/**
+ * Zeilen 0..3: feste Percussion-Sounds. Zeile 4: freie Percussion ("fx").
+ * Zeile 5: Bass (Noten eine Oktave tiefer, Bass-Timbre des Stils).
+ * Zeilen 6..7: melodisch.
+ */
 export const PERC_FIXED_SOUNDS = ['bd', 'sd', 'hh', 'oh'] as const;
 export const FX_ROW = 4;
+export const BASS_ROW = 5;
 export const FIRST_MELODIC_ROW = 5;
 
 /** Sounds, die in der fx-Zeile erlaubt sind — alle in der TR-909-Bank vorhanden. */
@@ -44,4 +49,4 @@ export const SOLO_MS = 60_000;
 
 export const WS_PORT_DEFAULT = 8787;
 
-export const ROW_LABELS = ['bd', 'sd', 'hh', 'oh', 'fx', '♪', '♪', '♪'] as const;
+export const ROW_LABELS = ['bd', 'sd', 'hh', 'oh', 'fx', 'bass', '♪', '♪'] as const;

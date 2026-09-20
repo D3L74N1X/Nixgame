@@ -16,6 +16,7 @@ const HINTS = [
   'Deine Zellen leuchten in deiner Farbe und klingen mit deiner Stimme.',
   '`!bpm 128` → Tempo für alle (60–200)',
   'Was 4 Minuten unberührt bleibt, verfällt. Setz es neu, um es zu halten.',
+  '`!bass c2 5` → Bass in Spalte 5. Solange niemand Bass schreibt, brummt die Entität ihren eigenen.',
   '`!clear 5 7` → eigene Zelle räumen · `!cell 5 7 e4` → gezielt setzen',
   'Likes geben der Entität Energie. Gifts lassen sie pulsieren.',
   'Noten: c2 bis b5, auch mit # und b. Was du tippst, wird in die Tonart gebogen.',

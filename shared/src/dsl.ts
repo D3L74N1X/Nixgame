@@ -32,6 +32,7 @@ function isPercSound(s: string): boolean {
  *
  *   !drum bd 5        Percussion in Spalte 5 (Zeile ergibt sich aus dem Sound)
  *   !note c3 5        Note in Spalte 5 (erste freie melodische Zeile)
+ *   !bass c2 5        Note in der Bass-Zeile, Spalte 5
  *   !cell 5 7 e4      Direkte Zellen-Adressierung (Spalte, Zeile, Token)
  *   !clear 5 7        Eigene Zelle räumen
  *   !bpm 140          Tempo (mit Cooldown)
@@ -52,6 +53,12 @@ export function parseCommand(text: string): Command | null {
       const col = parseInt1Based(parts[2], GRID_COLS);
       if (!note || col === null || !NOTE_REGEX.test(note)) return null;
       return { type: 'note', note, col };
+    }
+    case '!bass': {
+      const note = parts[1];
+      const col = parseInt1Based(parts[2], GRID_COLS);
+      if (!note || col === null || !NOTE_REGEX.test(note)) return null;
+      return { type: 'bass', note, col };
     }
     case '!cell': {
       const col = parseInt1Based(parts[1], GRID_COLS);

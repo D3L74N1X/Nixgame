@@ -1,4 +1,4 @@
-import { FIRST_MELODIC_ROW, FX_ROW, GRID_COLS, SCALE_BARS } from './constants.js';
+import { BASS_ROW, FX_ROW, GRID_COLS, SCALE_BARS } from './constants.js';
 import { DEFAULT_STYLE, STYLES, type Style } from './styles.js';
 import type { Cell, GridState } from './types.js';
 import { voiceFor } from './voice.js';
@@ -17,6 +17,12 @@ function rowTokens(row: (Cell | null)[], pick: (c: Cell) => string): string {
 
 function rowActive(row: (Cell | null)[]): boolean {
   return row.some((c) => c !== null);
+}
+
+/** Bass-Zeile: Noten eine Oktave tiefer, aber nicht unter Oktave 2 (Handy-Lautsprecher). */
+function bassToken(token: string): string {
+  const octave = Number(token.at(-1));
+  return octave >= 3 ? `${token.slice(0, -1)}${octave - 1}` : token;
 }
 
 const n2 = (x: number) => Number(x.toFixed(2));
@@ -89,8 +95,25 @@ export function gridToStrudel(state: GridState): string {
     }
   }
 
+  // Bass: Zuschauer-Bass-Zeile, sonst die Auto-Bassline des Stils.
+  const b = st.bass;
+  const bassChain =
+    `.s("${b.s}").release(${b.release}).gain(${b.gain}).lpf(${b.lpf}).room(.15)`;
+  const bassCells = own(state.cells[BASS_ROW]);
+  if (rowActive(bassCells)) {
+    layers.push(
+      `  note("${rowTokens(bassCells, (c) => bassToken(c.token))}").scale("${journeyScales}")\n` +
+        `    ${bassChain}`,
+    );
+  } else {
+    layers.push(
+      `  n("${b.pattern}").scale("${journeyScales}").add(note(-12))\n` +
+        `    ${bassChain}`,
+    );
+  }
+
   const m = st.melodic;
-  for (let row = FIRST_MELODIC_ROW; row < state.cells.length; row++) {
+  for (let row = BASS_ROW + 1; row < state.cells.length; row++) {
     const cells = own(state.cells[row]);
     if (!rowActive(cells)) continue;
     const notes = rowTokens(cells, (c) => c.token);

@@ -45,6 +45,12 @@ export interface Style {
     /** Zusätzliche Kette, roher Strudel-Code — nur aus diesem Modul. */
     extra: string;
   };
+  /**
+   * Bass: Timbre für die Bass-Zeile und die Auto-Bassline. `pattern` sind
+   * Skalenstufen (0 = Grundton) in Mini-Notation, ein Zyklus = ein Takt;
+   * gespielt eine Oktave unter der Skalen-Oktave, folgt der Skalenreise.
+   */
+  bass: { s: string; release: number; gain: number; lpf: number; pattern: string };
   drums: {
     gain: number;
     lpf: number | null;
@@ -93,6 +99,10 @@ export const STYLES: Record<StyleId, Style> = {
       gain: 0.45, lpf: [800, 3200], lpq: 0, room: 0.8, size: 0.95,
       delay: 0.4, feedback: 0.5, extra: '',
     },
+    bass: {
+      s: 'gm_fretless_bass', release: 1.5, gain: 0.4, lpf: 600,
+      pattern: '<[0 ~ ~ ~] [0 ~ 4 ~] [0 ~ ~ ~] [-3 ~ ~ 4]>',
+    },
     drums: { gain: 0.55, lpf: 2200, room: 0.5, hats: 0.5, extra: '', hatExtra: '' },
     swing: 0,
   },
@@ -125,6 +135,11 @@ export const STYLES: Record<StyleId, Style> = {
     melodic: {
       gain: 0.42, lpf: [500, 2200], lpq: 0, room: 0.5, size: 0.9,
       delay: 0.35, feedback: 0.55, extra: '',
+    },
+    // Offbeat-Achtel, alle vier Takte eine kleine Variation.
+    bass: {
+      s: 'gm_synth_bass_2', release: 0.15, gain: 0.42, lpf: 800,
+      pattern: '<[~ 0]*4 [~ 0]*4 [~ 0]*4 [~ 0 ~ 0 ~ 0 ~ [0 -3]]>',
     },
     // 909 ja, aber gefiltert und mit fast unhörbaren Hats — Dub-Techno-Bett.
     drums: { gain: 0.75, lpf: 2600, room: 0.35, hats: 0.35, extra: '', hatExtra: '' },
@@ -163,6 +178,11 @@ export const STYLES: Record<StyleId, Style> = {
       gain: 0.45, lpf: [700, 2800], lpq: 0, room: 0.55, size: 0.85,
       delay: 0.3, feedback: 0.45, extra: '.pan(sine.range(.35,.65).slow(7))',
     },
+    // Synkopiert, mit Quinte und Sexte als Farbe.
+    bass: {
+      s: 'gm_synth_bass_1', release: 0.25, gain: 0.4, lpf: 900,
+      pattern: '<[0 ~ [~ 0] ~ ~ 0 ~ [4 0]] [0 ~ [~ 0] ~ 5 ~ 0 ~]>',
+    },
     // LinnDrum weich gefiltert; die Hats stottern gelegentlich (ply) — der IDM-Tick.
     drums: {
       gain: 0.6, lpf: 2400, room: 0.4, hats: 0.45, extra: '',
@@ -200,6 +220,11 @@ export const STYLES: Record<StyleId, Style> = {
     melodic: {
       gain: 0.42, lpf: [400, 1800], lpq: 0, room: 0.7, size: 0.92,
       delay: 0.45, feedback: 0.62, extra: '',
+    },
+    // Tiefe, lange Töne mit Luft dazwischen — Dub-Bass.
+    bass: {
+      s: 'gm_electric_bass_finger', release: 0.7, gain: 0.45, lpf: 500,
+      pattern: '<[0 ~ ~ 0] [~ ~ 0 ~] [0 ~ ~ ~] [~ 0 ~ -3]>',
     },
     drums: { gain: 0.65, lpf: 2000, room: 0.5, hats: 0.4, extra: '', hatExtra: '' },
     swing: 0.04,
