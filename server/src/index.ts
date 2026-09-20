@@ -65,7 +65,11 @@ setInterval(() => {
 function onEvent(ev: LiveEvent) {
   switch (ev.kind) {
     case 'chat': {
-      for (const msg of store.handleChat(ev.user, ev.text)) broadcast(msg);
+      const msgs = store.handleChat(ev.user, ev.text);
+      if (process.env.LOG_CHAT !== '0') {
+        console.log(`[chat] @${ev.user}: ${ev.text}${msgs.length ? ` → ${msgs.map((m) => m.type).join(',')}` : ''}`);
+      }
+      for (const msg of msgs) broadcast(msg);
       break;
     }
     case 'like':
